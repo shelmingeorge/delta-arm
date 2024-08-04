@@ -1,5 +1,8 @@
 #include <AccelStepper.h>
 #include "AS5600.h"
+#include <Servo.h>
+
+const byte ARM_PIN = 10;
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -12,14 +15,19 @@ const byte step_delay = 10;
 const float angle_1_dislocation = 22.94;
 const byte delta = 1;
 
+const int default_fi = 180;
+const int default_dist = 100;
+const int default_height = 100;
+
+String string = default_string;
+
 bool is_grabbed = 0;
 char input = '0';
-String string = default_string;
 long target_pos_uncut = 0;
 
-int target_fi = 180;
-int target_dist = 100;
-int target_height = 100;
+int target_fi = default_fi;
+int target_dist = default_dist;
+int target_height = default_height;
 
 byte i = 0;
 
@@ -29,6 +37,48 @@ int target_pos_1 = int (target_fi / 1.8);
 
 AccelStepper Stepper1(1,3,2);
 AS5600 encoder1;  
+Servo Arm;
+
+
+
+void Arm_prep(Servo my_servo){
+  my_servo.attach(ARM_PIN);
+  my_servo.write(90);
+}
+
+void Arm_lock(Servo my_servo){
+  int position = my_servo.read();
+  if (position==0){
+    return;
+  }
+  my_servo.write(0);
+}
+
+void Arm_unlock(Servo my_servo){
+  int position = my_servo.read();
+  if (position==180){
+    return;
+  }
+  my_servo.write(180);
+}
+
+void Arm_off(Servo my_servo){
+  Arm_lock(my_servo);
+  my_servo.detach();
+}
+
+void Arm_grab_release(Servo my_servo){
+  if (is_grabbed){
+    Serial.println("releasing");
+    Arm_unlock(my_servo);
+    is_grabbed = 0;
+  }
+  else {
+    Serial.println("grabbing");
+    Arm_lock(my_servo);
+    is_grabbed = 1;
+  }
+}
 
 
 void add_char(char input_char){
@@ -38,20 +88,13 @@ void add_char(char input_char){
         break;
 
       case default_pos:
-        target_fi = 180;
-        target_dist = 100;
-        target_height = 100;
+        target_fi = default_fi;
+        target_dist = default_dist;
+        target_height = default_height;
         break;
 
       case grab:
-        if (is_grabbed){
-          Serial.println("releasing");
-          is_grabbed = 0;
-        }
-        else {
-          Serial.println("grabbing");
-          is_grabbed = 1;
-        }
+        Arm_grab_release(Arm);
         break;
       
       case pause:
@@ -143,7 +186,7 @@ void encoder_setup(AS5600 enc){
 
 float angle(AS5600 enc, float angle_dislocation){
   if (!enc.isConnected()){
-    return 180.0;
+    return default_fi;
   }
   return (float(enc.rawAngle()) / 4096 * 360) - angle_dislocation;
 }
@@ -186,6 +229,8 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
 
 void setup() {
   Serial.begin(115200);
+
+  Arm_prep(Arm);
 
   encoder_setup(encoder1);
   stepper_setup(Stepper1, angle(encoder1, angle_1_dislocation));
