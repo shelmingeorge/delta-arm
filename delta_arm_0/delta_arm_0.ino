@@ -11,7 +11,6 @@ const char play = 'c';
 const char grab = 'g';
 const char default_pos = 'd';
 
-const byte step_delay = 10;
 const float angle_1_dislocation = -22.94; //dir pin connect to 5v
 const byte delta = 1;
 
@@ -20,6 +19,8 @@ const int default_dist = 100;
 const int default_height = 100;
 
 String string = default_string;
+
+int step_delay = 10;
 
 bool is_grabbed = 0;
 char input = '0';
@@ -211,6 +212,12 @@ void stepper_print(AccelStepper Stepper, float angle){
   Serial.print("\n");
 }
 
+void speed_regulation(){
+  float koef = 200.0;
+  float dif = 1 / (abs(current_position(current_angle) - target_position) + 5);
+  step_delay + int(diff * koef);
+}
+
 void fix_position(int target_position, float current_angle, AccelStepper Stepper){
   
   if (abs(current_position(current_angle) - target_position) <= delta){
@@ -223,6 +230,8 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
     Stepper.move(1);
   }
 
+  speed_regulation();
+  
   Stepper.run();
 }
 
