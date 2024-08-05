@@ -2,7 +2,7 @@
 #include "AS5600.h"
 #include <Servo.h>
 
-const byte ARM_PIN = 10;
+const int ARM_PIN = 10;
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -11,7 +11,7 @@ const char play = 'c';
 const char grab = 'g';
 const char default_pos = 'd';
 
-const float angle_1_dislocation = -22.94; //dir pin connect to 5v
+const float angle_1_dislocation = - 22.94; //dir pin connect to 5v
 const byte delta = 1;
 
 const int default_fi = 180;
@@ -20,9 +20,9 @@ const int default_height = 100;
 
 String string = default_string;
 
-int step_delay = 10;
+int step_delay = 15;
 
-bool is_grabbed = 0;
+bool is_grabbed = 1;
 char input = '0';
 long target_pos_uncut = 0;
 
@@ -39,7 +39,6 @@ int target_pos_1 = int (target_fi / 1.8);
 AccelStepper Stepper1(1,3,2);
 AS5600 encoder1;  
 Servo Arm;
-
 
 
 void Arm_prep(Servo my_servo){
@@ -212,16 +211,20 @@ void stepper_print(AccelStepper Stepper, float angle){
   Serial.print("\n");
 }
 
-void speed_regulation(){
-  float koef = 200.0;
-  float dif = 1 / (abs(current_position(current_angle) - target_position) + 5);
-  step_delay + int(diff * koef);
+//продумать для нескольких двигателей
+void speed_regulation(int target_position, float current_angle){
+  float k_p = 200.0;
+  float div = 1 / (abs(current_position(current_angle) - target_position) + 5);
+  step_delay += int(div * k_p);
+
+  if (abs(current_position(current_angle) - target_position) <= delta){
+    step_delay = 10;
+  }
 }
 
 void fix_position(int target_position, float current_angle, AccelStepper Stepper){
   
   if (abs(current_position(current_angle) - target_position) <= delta){
-    step_delay = 10;
     Stepper.setCurrentPosition(target_position);
   }
   if (current_position(current_angle) - target_position > delta){
@@ -231,8 +234,6 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
     Stepper.move(1);
   }
 
-  speed_regulation();
-  
   Stepper.run();
 }
 
@@ -263,6 +264,7 @@ void loop() {
   get_target_pos_1();
 
   fix_position(target_pos_1, angle_1, Stepper1);
+  speed_regulation(target_pos_1, angle_1);
   
   stepper_print(Stepper1, angle_1);
   print_target_coords();
