@@ -12,7 +12,7 @@ const char grab = 'g';
 const char default_pos = 'd';
 
 const byte step_delay = 10;
-const float angle_1_dislocation = 22.94;
+const float angle_1_dislocation = -22.94; //dir pin connect to 5v
 const byte delta = 1;
 
 const int default_fi = 180;
@@ -217,10 +217,10 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
     Stepper.setCurrentPosition(target_position);
   }
   if (current_position(current_angle) - target_position > delta){
-    Stepper.move(1);
+    Stepper.move(-1);
   }
   if (current_position(current_angle) - target_position < -delta){
-    Stepper.move(-1);
+    Stepper.move(1);
   }
 
   Stepper.run();
