@@ -221,6 +221,7 @@ void speed_regulation(){
 void fix_position(int target_position, float current_angle, AccelStepper Stepper){
   
   if (abs(current_position(current_angle) - target_position) <= delta){
+    step_delay = 10;
     Stepper.setCurrentPosition(target_position);
   }
   if (current_position(current_angle) - target_position > delta){
