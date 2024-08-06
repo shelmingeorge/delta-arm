@@ -41,12 +41,12 @@ AS5600 encoder1;
 Servo Arm;
 
 
-void Arm_prep(Servo my_servo){
+void arm_setup(Servo my_servo){
   my_servo.attach(ARM_PIN);
   my_servo.write(90);
 }
 
-void Arm_lock(Servo my_servo){
+void arm_lock(Servo my_servo){
   int position = my_servo.read();
   if (position==0){
     return;
@@ -54,7 +54,7 @@ void Arm_lock(Servo my_servo){
   my_servo.write(0);
 }
 
-void Arm_unlock(Servo my_servo){
+void arm_unlock(Servo my_servo){
   int position = my_servo.read();
   if (position==180){
     return;
@@ -62,24 +62,41 @@ void Arm_unlock(Servo my_servo){
   my_servo.write(180);
 }
 
-void Arm_off(Servo my_servo){
-  Arm_lock(my_servo);
+void arm_off(Servo my_servo){
+  arm_lock(my_servo);
   my_servo.detach();
 }
 
-void Arm_grab_release(Servo my_servo){
+void arm_grab_release(Servo my_servo){
   if (is_grabbed){
     Serial.println("releasing");
-    Arm_unlock(my_servo);
+    arm_unlock(my_servo);
     is_grabbed = 0;
   }
   else {
     Serial.println("grabbing");
-    Arm_lock(my_servo);
+    arm_lock(my_servo);
     is_grabbed = 1;
   }
+  delay(1000);//чтобы успеть прочесть текст
 }
 
+void waiting(){
+  i = 0;
+  string = default_string;
+  Serial.println("PRESS <C> TO CONTINUE");
+  while(Serial.read() != play){
+    delay(100);
+  }
+  Serial.println("THE PROGRAM WILL CONTINUE IN 1 SECOND");
+  delay(1000);
+}
+
+void set_default_pos(){
+  target_fi = default_fi;
+  target_dist = default_dist;
+  target_height = default_height;
+}
 
 void add_char(char input_char){
       switch (input_char)
@@ -88,23 +105,15 @@ void add_char(char input_char){
         break;
 
       case default_pos:
-        target_fi = default_fi;
-        target_dist = default_dist;
-        target_height = default_height;
+        set_default_pos();
         break;
 
       case grab:
-        Arm_grab_release(Arm);
+        arm_grab_release(Arm);
         break;
       
       case pause:
-        i = 0;
-        string = default_string;
-        Serial.println("PRESS <C> TO CONTINUE");
-        while(Serial.read() != play){
-          delay(100);
-        }
-        Serial.println("THE PROGRAM CONTINIOUS");
+        waiting();
         break;
       
       default:
@@ -154,7 +163,6 @@ void get_coords(){
 
   target_height = target_pos_uncut % 1000 % 1000;
   Serial.println(target_height);
-
 }
 
 void get_target_pos_1(){
@@ -212,14 +220,12 @@ void stepper_print(AccelStepper Stepper, float angle){
 }
 
 //продумать для нескольких двигателей
+//можно находить какому двигателю надо проехать дальше и выбирать его для отсчета
 void speed_regulation(int target_position, float current_angle){
   float k_p = 200.0;
-  float div = 1 / (abs(current_position(current_angle) - target_position) + 5);
-  step_delay += int(div * k_p);
+  float div = 1 / float(abs(current_position(current_angle) - target_position) + 5);
+  step_delay = int(div * k_p) + 5;
 
-  if (abs(current_position(current_angle) - target_position) <= delta){
-    step_delay = 10;
-  }
 }
 
 void fix_position(int target_position, float current_angle, AccelStepper Stepper){
@@ -241,8 +247,7 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
 void setup() {
   Serial.begin(115200);
 
-  Arm_prep(Arm);
-
+  arm_setup(Arm);
   encoder_setup(encoder1);
   stepper_setup(Stepper1, angle(encoder1, angle_1_dislocation));
 
