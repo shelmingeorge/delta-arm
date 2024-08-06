@@ -2,7 +2,7 @@
 #include "AS5600.h"
 #include <Servo.h>
 
-const int ARM_PIN = 10;
+#define ARM_PIN 10
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -15,8 +15,8 @@ const float angle_1_dislocation = - 22.94; //dir pin connect to 5v
 const byte delta = 1;
 
 const int default_fi = 180;
-const int default_dist = 100;
-const int default_height = 100;
+const int default_dist = 200;
+const int default_height = 0;
 
 String string = default_string;
 
@@ -56,10 +56,10 @@ void arm_lock(Servo my_servo){
 
 void arm_unlock(Servo my_servo){
   int position = my_servo.read();
-  if (position==180){
+  if (position==150){
     return;
   }
-  my_servo.write(180);
+  my_servo.write(150);
 }
 
 void arm_off(Servo my_servo){
@@ -153,7 +153,7 @@ void get_coords(){
   if (target_pos_uncut / 1000 % 1000 <= 0){
     return;
   }
-  if (target_pos_uncut % 1000 % 1000 <= 0){
+  if (target_pos_uncut % 1000 % 1000 < 0){
     return;
   }
 
@@ -163,6 +163,16 @@ void get_coords(){
 
   target_height = target_pos_uncut % 1000 % 1000;
   Serial.println(target_height);
+}
+
+void read_input(){
+  if ((string == default_string) or (input != endl)){
+    return;
+  }
+
+  get_coords();
+  string = default_string;
+  i = 0;
 }
 
 void get_target_pos_1(){
@@ -258,17 +268,11 @@ void loop() {
   angle_1 = angle(encoder1, angle_1_dislocation);
 
   check_input();
-
-  if ((string != default_string) and (input == endl)){
-  get_coords();
-
-  string = default_string;
-  i = 0;
-  }
-
+  read_input();
   get_target_pos_1();
-
+  
   fix_position(target_pos_1, angle_1, Stepper1);
+  
   speed_regulation(target_pos_1, angle_1);
   
   stepper_print(Stepper1, angle_1);
