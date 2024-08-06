@@ -1,4 +1,4 @@
-Code for robo-arm project.
+tiny robo-arm project.
 
 Currently is in progress. 
 
