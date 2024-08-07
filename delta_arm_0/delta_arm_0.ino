@@ -6,8 +6,8 @@
 #define ARM_PIN 0
 
 //mm
-const int element_length[4] = {0, 1, 1, 1}; 
-const int element_height[4] = {1, 1, 1, 1};
+const int element_length[] = {0, 62, 69, 115}; //from the model
+const int element_height[] = {69, -29, 0, 0};
 
 const int default_fi = 180;
 const int default_dist = 200;
@@ -20,7 +20,7 @@ const char play = 'c';
 const char grab = 'g';
 const char default_pos = 'd';
 
-const float angle_1_dislocation = - 22.94; //dir pin connect to 5v
+const float angle_dislocation[] = {-22.94, 0, 0}; //dir pin connect to 5v
 const byte delta = 1;
 
 String string = default_string;
@@ -147,36 +147,24 @@ void get_coords(){
     return;
   }
   target_pos_uncut = string.toInt();
-  Serial.print(target_pos_uncut);
-  Serial.print("\t");
+  int fi = target_pos_uncut / 1000 / 1000;
+  int dist = target_pos_uncut / 1000 % 1000;
+  int height = target_pos_uncut % 1000 % 1000;
 
-  if (target_pos_uncut / 1000 / 1000 <= 0){
+  if ((fi <= 0) or (fi >= 330)){
     return;
   }
-  if (target_pos_uncut / 1000 / 1000 >= 330){
-    return;
-  }
-  target_fi = target_pos_uncut / 1000 / 1000;
+  target_fi = fi;
 
-  if (target_pos_uncut / 1000 % 1000 <= 150){
+  if ((dist <= -70) or (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
     return;
   }
-  if (target_pos_uncut / 1000 % 1000 > (element_length[0] + element_length[1] + element_length[2] + element_length[3])){
-    return;
-  }
-  if (target_pos_uncut % 1000 % 1000 < 0){
-    return;
-  }
-  if (target_pos_uncut % 1000 % 1000 > (element_height[0] + element_height[1] + element_height[2] + element_height[3])){
+  if ((height < 5) or (height > (element_height[0] + element_height[1] + element_height[2] + element_height[3]))){
     return;
   }
 
-  target_dist = target_pos_uncut / 1000 % 1000;
-  target_height = target_pos_uncut % 1000 % 1000;
-  
-  Serial.print(target_dist);
-  Serial.print("\t");
-  Serial.println(target_height);
+  target_dist = dist;
+  target_height = height;
 }
 
 void read_input(){
@@ -190,6 +178,9 @@ void read_input(){
 }
 
 void get_target_pos_1(){
+  if ((target_fi <= 0) or (target_fi >= 330)){
+    return;
+  }
   target_pos_1 = target_fi / 1.8;
 }
 
@@ -201,6 +192,11 @@ void get_target_pos_2(){
   cos_q3 /= 2 * element_length[2] * element_length[3];
 
   q3 = -1 * acos(cos_q3) * 180 / M_PI;
+  //тут *(-1) если в диапазоне где надо развернуть
+  if ((q3 >= 320) or (q3 <= 170)){
+    return;
+  }
+
   target_pos_3 = int(q3 / 1.8);
 }
 
@@ -215,6 +211,9 @@ void get_target_pos_3(){
 
   q2 = atan(tg_1) - atan(tg_2);
   q2 *= 180 / M_PI;
+  if ((q2 >= 320) or (q2 <= 60)){
+    return;
+  }
   target_pos_2 = int(q2 / 1.8);
 }
 
@@ -298,13 +297,13 @@ void setup() {
 
   arm_setup(Arm);
   encoder_setup(encoder1);
-  stepper_setup(Stepper1, angle(encoder1, angle_1_dislocation));
+  stepper_setup(Stepper1, angle(encoder1, angle_dislocation[0]));
 
 }
 
 
 void loop() {
-  angle_1 = angle(encoder1, angle_1_dislocation);
+  angle_1 = angle(encoder1, angle_dislocation[0]);
 
   check_input();
   read_input();
