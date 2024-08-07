@@ -37,16 +37,12 @@ int target_height = default_height;
 
 byte i = 0;
 
-float angle_1 = 0.0;
-float angle_2 = 0.0;
-float angle_3 = 0.0;
+float enc_angle[] = {0.0, 0.0, 0.0};
+int target_pos[] = {int (target_fi / 1.8), 100, 100};
 
-int target_pos_1 = int (target_fi / 1.8);
-int target_pos_2 = 100;
-int target_pos_3 = 100;
 
-AccelStepper Stepper1(1,3,2);
-AS5600 encoder1;  
+AccelStepper Stepper0(1,3,2);
+AS5600 encoder0;  
 Servo Arm;
 
 
@@ -177,44 +173,45 @@ void read_input(){
   i = 0;
 }
 
-void get_target_pos_1(){
+void get_target_pos_0(){
   if ((target_fi <= 0) or (target_fi >= 330)){
     return;
   }
-  target_pos_1 = target_fi / 1.8;
+  target_pos[0] = target_fi / 1.8;
 }
 
 void get_target_pos_2(){
-  double q3 = 0.0;
+  double q2 = 0.0;
   double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
   cos_q3 += square(target_height - element_height[0] - element_height[1]);
   cos_q3 -= square(element_length[2]) + square(element_length[3]);
   cos_q3 /= 2 * element_length[2] * element_length[3];
 
-  q3 = -1 * acos(cos_q3) * 180 / M_PI;
+  q2 = -1 * acos(cos_q3) * 180 / M_PI;
   //тут *(-1) если в диапазоне где надо развернуть
-  if ((q3 >= 320) or (q3 <= 170)){
+  //граница для разворота - положение типо под 45, где длина становится короче определенной
+  if ((q2 >= 320) or (q2 <= 170)){
     return;
   }
 
-  target_pos_3 = int(q3 / 1.8);
+  target_pos[2] = int(q2 / 1.8);
 }
 
-void get_target_pos_3(){
-  double q2 = 0.0;
-  double q3 = double(target_pos_3) * M_PI / 100;
+void get_target_pos_1(){
+  double q1 = 0.0;
+  double q2 = double(target_pos[2]) * M_PI / 100;
 
-  double tg_2 = element_length[3] * sin(q3);
+  double tg_2 = element_length[3] * sin(q2);
   double tg_1 = target_height - element_height[0] - element_height[1];
   tg_1 /= target_dist - element_length[0] - element_length[1];
-  tg_2 /= element_length[3] * sin(q3) + element_length[2];
+  tg_2 /= element_length[3] * sin(q2) + element_length[2];
 
-  q2 = atan(tg_1) - atan(tg_2);
-  q2 *= 180 / M_PI;
-  if ((q2 >= 320) or (q2 <= 60)){
+  q1 = atan(tg_1) - atan(tg_2);
+  q1 *= 180 / M_PI;
+  if ((q1 >= 320) or (q1 <= 60)){
     return;
   }
-  target_pos_2 = int(q2 / 1.8);
+  target_pos[1] = int(q1 / 1.8);
 }
 
 void print_target_coords(){
@@ -296,24 +293,24 @@ void setup() {
   Serial.begin(115200);
 
   arm_setup(Arm);
-  encoder_setup(encoder1);
-  stepper_setup(Stepper1, angle(encoder1, angle_dislocation[0]));
+  encoder_setup(encoder0);
+  stepper_setup(Stepper0, angle(encoder0, angle_dislocation[0]));
 
 }
 
 
 void loop() {
-  angle_1 = angle(encoder1, angle_dislocation[0]);
+  enc_angle[0] = angle(encoder0, angle_dislocation[0]);
 
   check_input();
   read_input();
-  get_target_pos_1();
+  get_target_pos_0();
   
-  fix_position(target_pos_1, angle_1, Stepper1);
+  fix_position(target_pos[0], enc_angle[0], Stepper0);
   
-  speed_regulation(target_pos_1, angle_1);
+  speed_regulation(target_pos[0], enc_angle[0]);
   
-  stepper_print(Stepper1, angle_1);
+  stepper_print(Stepper0, enc_angle[0]);
   print_target_coords();
 
   delay(step_delay);
