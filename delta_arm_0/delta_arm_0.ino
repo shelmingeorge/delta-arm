@@ -1,8 +1,17 @@
 #include <AccelStepper.h>
 #include "AS5600.h"
 #include <Servo.h>
+#include <math.h>
 
-#define ARM_PIN 10
+#define ARM_PIN 0
+
+//mm
+const int element_length[4] = {0, 1, 1, 1}; 
+const int element_height[4] = {1, 1, 1, 1};
+
+const int default_fi = 180;
+const int default_dist = 200;
+const int default_height = 0;
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -13,10 +22,6 @@ const char default_pos = 'd';
 
 const float angle_1_dislocation = - 22.94; //dir pin connect to 5v
 const byte delta = 1;
-
-const int default_fi = 180;
-const int default_dist = 200;
-const int default_height = 0;
 
 String string = default_string;
 
@@ -33,8 +38,12 @@ int target_height = default_height;
 byte i = 0;
 
 float angle_1 = 0.0;
+float angle_2 = 0.0;
+float angle_3 = 0.0;
 
 int target_pos_1 = int (target_fi / 1.8);
+int target_pos_2 = 100;
+int target_pos_3 = 100;
 
 AccelStepper Stepper1(1,3,2);
 AS5600 encoder1;  
@@ -141,7 +150,7 @@ void get_coords(){
   Serial.print(target_pos_uncut);
   Serial.print("\t");
 
-  if (target_pos_uncut / 1000 / 1000 <= 30){
+  if (target_pos_uncut / 1000 / 1000 <= 0){
     return;
   }
   if (target_pos_uncut / 1000 / 1000 >= 330){
@@ -149,19 +158,24 @@ void get_coords(){
   }
   target_fi = target_pos_uncut / 1000 / 1000;
 
-
-  if (target_pos_uncut / 1000 % 1000 <= 0){
+  if (target_pos_uncut / 1000 % 1000 <= 150){
+    return;
+  }
+  if (target_pos_uncut / 1000 % 1000 > (element_length[0] + element_length[1] + element_length[2] + element_length[3])){
     return;
   }
   if (target_pos_uncut % 1000 % 1000 < 0){
     return;
   }
+  if (target_pos_uncut % 1000 % 1000 > (element_height[0] + element_height[1] + element_height[2] + element_height[3])){
+    return;
+  }
 
   target_dist = target_pos_uncut / 1000 % 1000;
+  target_height = target_pos_uncut % 1000 % 1000;
+  
   Serial.print(target_dist);
   Serial.print("\t");
-
-  target_height = target_pos_uncut % 1000 % 1000;
   Serial.println(target_height);
 }
 
@@ -177,6 +191,31 @@ void read_input(){
 
 void get_target_pos_1(){
   target_pos_1 = target_fi / 1.8;
+}
+
+void get_target_pos_2(){
+  double q3 = 0.0;
+  double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
+  cos_q3 += square(target_height - element_height[0] - element_height[1]);
+  cos_q3 -= square(element_length[2]) + square(element_length[3]);
+  cos_q3 /= 2 * element_length[2] * element_length[3];
+
+  q3 = -1 * acos(cos_q3) * 180 / M_PI;
+  target_pos_3 = int(q3 / 1.8);
+}
+
+void get_target_pos_3(){
+  double q2 = 0.0;
+  double q3 = double(target_pos_3) * M_PI / 100;
+
+  double tg_2 = element_length[3] * sin(q3);
+  double tg_1 = target_height - element_height[0] - element_height[1];
+  tg_1 /= target_dist - element_length[0] - element_length[1];
+  tg_2 /= element_length[3] * sin(q3) + element_length[2];
+
+  q2 = atan(tg_1) - atan(tg_2);
+  q2 *= 180 / M_PI;
+  target_pos_2 = int(q2 / 1.8);
 }
 
 void print_target_coords(){
