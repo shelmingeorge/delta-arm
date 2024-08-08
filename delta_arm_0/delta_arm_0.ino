@@ -6,12 +6,12 @@
 #define ARM_PIN 0
 
 //mm
-const int element_length[] = {0, 62, 69, 115}; //from the model
-const int element_height[] = {69, -29, 0, 0};
+const int element_length[] = {0, 70, 70, 114}; //from the model
+const int element_height[] = {70, -29, 0, -13};
 
 const int default_fi = 180;
-const int default_dist = 200;
-const int default_height = 0;
+const int default_dist = 254;
+const int default_height = 26;
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -38,7 +38,7 @@ int target_height = default_height;
 byte i = 0;
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-int target_pos[] = {int (target_fi / 1.8), 100, 100};
+int target_pos[] = {int (target_fi / 1.8), 100, 100}; //цилиндрические координаты
 
 
 AccelStepper Stepper0(1,3,2);
@@ -155,7 +155,12 @@ void get_coords(){
   if ((dist <= -70) or (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
     return;
   }
-  if ((height < 5) or (height > (element_height[0] + element_height[1] + element_height[2] + element_height[3]))){
+  if ((height < 20) or (height > (element_height[0] + element_height[1] + element_length[2] + element_length[3]))){
+    return;
+  }
+  
+  //отрезает всю зону 1 и 2 звена
+  if ((dist < 100) and (height < 75)){
     return;
   }
 
@@ -174,44 +179,45 @@ void read_input(){
 }
 
 void get_target_pos_0(){
-  if ((target_fi <= 0) or (target_fi >= 330)){
-    return;
-  }
   target_pos[0] = target_fi / 1.8;
 }
 
-void get_target_pos_2(){
+void get_target_pos_1_2(){
   double q2 = 0.0;
   double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
   cos_q3 += square(target_height - element_height[0] - element_height[1]);
   cos_q3 -= square(element_length[2]) + square(element_length[3]);
   cos_q3 /= 2 * element_length[2] * element_length[3];
 
+  if (abs(cos_q3) > 1){
+    return;
+  }
+
   q2 = -1 * acos(cos_q3) * 180 / M_PI;
-  //тут *(-1) если в диапазоне где надо развернуть
-  //граница для разворота - положение типо под 45, где длина становится короче определенной
+  
+  //если заходит в обратное направление наклона - считать угол в другую сторону
+  if (target_dist <= element_length[0] + element_length[1]){
+    q2 *= -1;
+  }
+  
   if ((q2 >= 320) or (q2 <= 170)){
     return;
   }
 
-  target_pos[2] = int(q2 / 1.8);
-}
-
-void get_target_pos_1(){
   double q1 = 0.0;
-  double q2 = double(target_pos[2]) * M_PI / 100;
-
   double tg_2 = element_length[3] * sin(q2);
   double tg_1 = target_height - element_height[0] - element_height[1];
   tg_1 /= target_dist - element_length[0] - element_length[1];
-  tg_2 /= element_length[3] * sin(q2) + element_length[2];
+  tg_2 /= element_length[3] * cos(q2) + element_length[2];
 
   q1 = atan(tg_1) - atan(tg_2);
   q1 *= 180 / M_PI;
   if ((q1 >= 320) or (q1 <= 60)){
     return;
   }
-  target_pos[1] = int(q1 / 1.8);
+  target_pos[1] = int(q1 / 1.8) + 100;
+  target_pos[2] = int(q2 / 1.8) + 100;
+
 }
 
 void print_target_coords(){
