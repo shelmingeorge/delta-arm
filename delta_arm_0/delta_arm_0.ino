@@ -1,9 +1,11 @@
 #include <AccelStepper.h>
 #include "AS5600.h"
+#include "TI_TCA9548A.h"
 #include <Servo.h>
 #include <math.h>
 
 #define ARM_PIN 0
+byte enc_adress[] = {5, 6, 7};
 
 //mm
 const int element_length[] = {0, 70, 70, 114}; //from the model
@@ -50,6 +52,12 @@ AS5600 encoder1;  //dir pin connected to gnd
 AS5600 encoder2;  //dir pin connected to 5v
 Servo Arm;
 
+
+void TCA9548A(uint8_t bus){
+  Wire.beginTransmission(0x70);  // TCA9548A address is 0x70
+  Wire.write(1 << bus);          // send byte to select bus
+  Wire.endTransmission();
+}
 
 void arm_setup(Servo my_servo){
   my_servo.attach(ARM_PIN);
@@ -341,14 +349,32 @@ void setup() {
   Wire.begin();
 
   arm_setup(Arm);
+
+  TCA9548A(enc_adress[0]);
   encoder_setup(encoder0);
   stepper_setup(Stepper0, angle(encoder0, angle_dislocation[0]));
+
+  TCA9548A(enc_adress[1]);
+  encoder_setup(encoder1);
+  //stepper_setup(Stepper1, angle(encoder1, angle_dislocation[1]));
+
+  TCA9548A(enc_adress[2]);
+  encoder_setup(encoder2);
+  //stepper_setup(Stepper2, angle(encoder2, angle_dislocation[2]));
 
 }
 
 
 void loop() {
+
+  TCA9548A(enc_adress[0]);
   enc_angle[0] = angle(encoder0, angle_dislocation[0]);
+
+  TCA9548A(enc_adress[1]);
+  enc_angle[1] = angle(encoder1, angle_dislocation[1]);
+
+  TCA9548A(enc_adress[2]);
+  enc_angle[2] = angle(encoder0, angle_dislocation[2]);
 
   check_input();
   read_input();
