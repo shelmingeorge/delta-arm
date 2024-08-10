@@ -12,8 +12,8 @@ const int element_length[] = {0, 70, 70, 114}; //from the model
 const int element_height[] = {70, -29, 0, 0};
 
 const int default_fi = 180;
-const int default_dist = 254;
-const int default_height = 26;
+const int default_dist = 230;
+const int default_height = 50;
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -192,10 +192,18 @@ void get_coords(){
   if ((fi <= 0) or (fi >= 330)){
     return;
   }
-  if ((dist <= -70) or (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
+  if ((dist <= -70) or 
+  (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
     return;
   }
-  if ((height < 20) or (height > (element_height[0] + element_height[1] + element_length[2] + element_length[3]))){
+  if ((height < 20) or 
+  (height > (element_height[0] + element_height[1] + element_length[2] + element_length[3]))){
+    return;
+  }
+  //теорема пифагора
+  if ((square(dist - element_length[0] - element_length[1]) + 
+  square(height - element_height[0] - element_height[1])) > 
+  square(element_length[2] + element_length[3])){
     return;
   }
   
