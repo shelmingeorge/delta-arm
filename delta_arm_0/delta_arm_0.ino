@@ -43,7 +43,6 @@ byte i = 0;
 float enc_angle[] = {0.0, 0.0, 0.0};
 int target_pos[] = {int (target_fi / 1.8), 100, 100}; //цилиндрические координаты
 
-
 AccelStepper Stepper0(1,3,2);
 AccelStepper Stepper1(1,6,5);
 AccelStepper Stepper2(1,10,9);
@@ -273,6 +272,7 @@ void get_target_pos_1_2(){
 }
 
 void print_target_coords(){
+  Serial.print("\n");
   //Serial.println(string);
   
   Serial.print(target_pos_uncut);
@@ -316,7 +316,7 @@ void stepper_print(AccelStepper Stepper, float angle){
   Serial.print(current_position(angle));
   //Serial.print("\t");
   //Serial.print(Stepper.currentPosition());
-  Serial.print("\n");
+  Serial.print("\t");
 }
 
 //продумать для нескольких двигателей
@@ -362,6 +362,7 @@ void setup() {
   encoder_setup(encoder2);
   //stepper_setup(Stepper2, angle(encoder2, angle_dislocation[2]));
 
+  delay(2000);
 }
 
 
@@ -381,10 +382,11 @@ void loop() {
   get_target_pos_0();
   
   fix_position(target_pos[0], enc_angle[0], Stepper0);
-  
   speed_regulation(target_pos[0], enc_angle[0]);
   
   stepper_print(Stepper0, enc_angle[0]);
+  //stepper_print(Stepper1, enc_angle[1]);
+  //stepper_print(Stepper2, enc_angle[2]);
   print_target_coords();
 
   delay(step_delay);
