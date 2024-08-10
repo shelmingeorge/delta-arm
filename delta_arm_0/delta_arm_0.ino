@@ -26,6 +26,8 @@ const char default_pos = 'd';
 const float angle_dislocation[] = {-22.94, -9.23 + 180.0, -5.27 + 180.0};
 const byte delta = 1;
 
+const bool clockwise_direction[] = {0, 1, 0};
+
 String string = default_string;
 
 int step_delay = 15;
@@ -328,16 +330,20 @@ void speed_regulation(int target_position, float current_angle){
 
 }
 
-void fix_position(int target_position, float current_angle, AccelStepper Stepper){
-  
+void fix_position(int target_position, float current_angle, AccelStepper Stepper, bool direction){
+  int step = 1;
+  if (direction){
+    step *= (-1);
+  }
+
   if (abs(current_position(current_angle) - target_position) <= delta){
     Stepper.setCurrentPosition(target_position);
   }
   if (current_position(current_angle) - target_position > delta){
-    Stepper.move(-1);
+    Stepper.move(-step);
   }
   if (current_position(current_angle) - target_position < -delta){
-    Stepper.move(1);
+    Stepper.move(step);
   }
 
   Stepper.run();
@@ -380,8 +386,12 @@ void loop() {
   check_input();
   read_input();
   get_target_pos_0();
+  //get_target_pos_1_2();
   
-  fix_position(target_pos[0], enc_angle[0], Stepper0);
+  fix_position(target_pos[0], enc_angle[0], Stepper0, clockwise_direction[0]);
+  //fix_position(target_pos[1], enc_angle[1], Stepper1, clockwise_direction[1]);
+  //fix_position(target_pos[2], enc_angle[2], Stepper2, clockwise_direction[2]);
+  
   speed_regulation(target_pos[0], enc_angle[0]);
   
   stepper_print(Stepper0, enc_angle[0]);
