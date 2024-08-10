@@ -7,7 +7,7 @@
 
 //mm
 const int element_length[] = {0, 70, 70, 114}; //from the model
-const int element_height[] = {70, -29, 0, -13};
+const int element_height[] = {70, -29, 0, 0};
 
 const int default_fi = 180;
 const int default_dist = 254;
@@ -18,9 +18,10 @@ const char endl = 'e';
 const char pause = 'p';
 const char play = 'c';
 const char grab = 'g';
+const char angles = 'a';
 const char default_pos = 'd';
 
-const float angle_dislocation[] = {-22.94, 0, 0}; //dir pin connect to 5v
+const float angle_dislocation[] = {-22.94, -9.23 + 180.0, -5.27 + 180.0};
 const byte delta = 1;
 
 String string = default_string;
@@ -42,7 +43,11 @@ int target_pos[] = {int (target_fi / 1.8), 100, 100}; //цилиндрическ
 
 
 AccelStepper Stepper0(1,3,2);
-AS5600 encoder0;  
+AccelStepper Stepper1(1,6,5);
+AccelStepper Stepper2(1,10,9);
+AS5600 encoder0;  //dir pin connected to 5v
+AS5600 encoder1;  //dir pin connected to gnd
+AS5600 encoder2;  //dir pin connected to 5v
 Servo Arm;
 
 
@@ -109,6 +114,9 @@ void add_char(char input_char){
       case endl:
         break;
 
+      case angles:
+        break;
+
       case default_pos:
         set_default_pos();
         break;
@@ -138,6 +146,31 @@ void check_input(){
   }
 }
 
+void get_angles(){
+  if (i!=8){
+    return;
+  }
+  target_pos_uncut = string.toInt();
+  int angle_0 = target_pos_uncut / 1000 / 1000;
+  int angle_1 = target_pos_uncut / 1000 % 1000;
+  int angle_2 = target_pos_uncut % 1000 % 1000;
+
+  if ((angle_0 <= 0) or (angle_0 >= 330)){
+    return;
+  }
+  if ((angle_1 >= 320) or (angle_1 <= 60)){
+    return;
+  }
+  if ((angle_2 >= 320) or (angle_2 <= 170)){
+    return;
+  }
+
+  target_pos[0] = int(double(angle_0) / 1.8);
+  target_pos[1] = int(double(angle_1) / 1.8);
+  target_pos[2] = int(double(angle_2) / 1.8);
+
+}
+
 void get_coords(){
   if (i!=8){
     return;
@@ -150,8 +183,6 @@ void get_coords(){
   if ((fi <= 0) or (fi >= 330)){
     return;
   }
-  target_fi = fi;
-
   if ((dist <= -70) or (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
     return;
   }
@@ -164,16 +195,29 @@ void get_coords(){
     return;
   }
 
+  target_fi = fi;
   target_dist = dist;
   target_height = height;
 }
 
 void read_input(){
-  if ((string == default_string) or (input != endl)){
+  if (string == default_string){
     return;
   }
 
-  get_coords();
+  switch (input){
+    case endl:
+      get_coords();
+      break;
+
+    case angles:
+      get_angles();
+      break;
+
+    default:
+      return;
+  }
+
   string = default_string;
   i = 0;
 }
@@ -215,8 +259,8 @@ void get_target_pos_1_2(){
   if ((q1 >= 320) or (q1 <= 60)){
     return;
   }
-  target_pos[1] = int(q1 / 1.8) + 100;
-  target_pos[2] = int(q2 / 1.8) + 100;
+  target_pos[1] = int(q1 / 1.8);
+  target_pos[2] = int(q2 / 1.8);
 
 }
 
@@ -234,9 +278,6 @@ void print_target_coords(){
 }
 
 void encoder_setup(AS5600 enc){
-
-  Wire.begin();
-
   enc.begin();
   Serial.print("Connect: ");
   Serial.println(enc.isConnected());
@@ -271,7 +312,7 @@ void stepper_print(AccelStepper Stepper, float angle){
 }
 
 //продумать для нескольких двигателей
-//можно находить какому двигателю надо проехать дальше и выбирать его для отсчета
+//можно находить какому двигателю надо ехать дальше/ближе и выбирать его для отсчета
 void speed_regulation(int target_position, float current_angle){
   float k_p = 200.0;
   float div = 1 / float(abs(current_position(current_angle) - target_position) + 5);
@@ -297,6 +338,7 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
 
 void setup() {
   Serial.begin(115200);
+  Wire.begin();
 
   arm_setup(Arm);
   encoder_setup(encoder0);
