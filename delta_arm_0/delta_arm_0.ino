@@ -1,4 +1,5 @@
 #include <AccelStepper.h>
+#include <Wire.h>
 #include "AS5600.h"
 #include "TI_TCA9548A.h"
 #include <Servo.h>
@@ -23,10 +24,10 @@ const char grab = 'g';
 const char angles = 'a';
 const char default_pos = 'd';
 
-const float angle_dislocation[] = {-22.94, -9.23 + 180.0, -5.27 + 180.0};
+const float angle_dislocation[] = {-22.94, -11.23 + 180, -5.27 + 180};
 const byte delta = 1;
 
-const bool clockwise_direction[] = {0, 1, 0};
+const bool clockwise_direction[] = {0, 0, 0};
 
 String string = default_string;
 
@@ -43,11 +44,11 @@ int target_height = default_height;
 byte i = 0;
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-int target_pos[] = {int (target_fi / 1.8), 100, 100}; //цилиндрические координаты
+int target_pos[] = {int (target_fi / 1.8), 0, 0}; //цилиндрические координаты
 
-AccelStepper Stepper0(1,3,2);
+AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
-AccelStepper Stepper2(1,10,9);
+AccelStepper Stepper2(1,3,2);
 AS5600 encoder0;  //dir pin connected to 5v
 AS5600 encoder1;  //dir pin connected to gnd
 AS5600 encoder2;  //dir pin connected to 5v
@@ -167,10 +168,10 @@ void get_angles(){
   if ((angle_0 <= 0) or (angle_0 >= 330)){
     return;
   }
-  if ((angle_1 >= 320) or (angle_1 <= 60)){
+  if ((angle_1 >= 120) or (angle_1 <= -120)){
     return;
   }
-  if ((angle_2 >= 320) or (angle_2 <= 170)){
+  if ((angle_2 >= 120) or (angle_2 <= -120)){
     return;
   }
 
@@ -261,7 +262,7 @@ void get_target_pos_1_2(){
     q2 *= -1;
   }
   
-  if ((q2 >= 320) or (q2 <= 170)){
+  if ((q2 >= 120) or (q2 <= -120)){
     return;
   }
 
@@ -273,7 +274,7 @@ void get_target_pos_1_2(){
 
   q1 = atan(tg_1) - atan(tg_2);
   q1 *= 180 / M_PI;
-  if ((q1 >= 320) or (q1 <= 60)){
+  if ((q1 >= 120) or (q1 <= -120)){
     return;
   }
   target_pos[1] = int(q1 / 1.8);
@@ -320,7 +321,6 @@ void stepper_setup(AccelStepper Stepper, float current_angle){
 }
 
 void stepper_print(AccelStepper Stepper, float angle){
-
   Serial.print(angle);
   Serial.print("\t ");
   Serial.print(current_position(angle));
@@ -370,11 +370,11 @@ void setup() {
 
   TCA9548A(enc_adress[1]);
   encoder_setup(encoder1);
-  //stepper_setup(Stepper1, angle(encoder1, angle_dislocation[1]));
+  stepper_setup(Stepper1, angle(encoder1, angle_dislocation[1]));
 
   TCA9548A(enc_adress[2]);
   encoder_setup(encoder2);
-  //stepper_setup(Stepper2, angle(encoder2, angle_dislocation[2]));
+  stepper_setup(Stepper2, angle(encoder2, angle_dislocation[2]));
 
   delay(2000);
 }
@@ -393,18 +393,19 @@ void loop() {
 
   check_input();
   read_input();
-  get_target_pos_0();
+  //get_target_pos_0();
   //get_target_pos_1_2();
   
   fix_position(target_pos[0], enc_angle[0], Stepper0, clockwise_direction[0]);
-  //fix_position(target_pos[1], enc_angle[1], Stepper1, clockwise_direction[1]);
-  //fix_position(target_pos[2], enc_angle[2], Stepper2, clockwise_direction[2]);
+  fix_position(target_pos[1], enc_angle[1], Stepper1, clockwise_direction[1]);
+  fix_position(target_pos[2], enc_angle[2], Stepper2, clockwise_direction[2]);
   
   speed_regulation(target_pos[0], enc_angle[0]);
   
   stepper_print(Stepper0, enc_angle[0]);
-  //stepper_print(Stepper1, enc_angle[1]);
-  //stepper_print(Stepper2, enc_angle[2]);
+  stepper_print(Stepper1, enc_angle[1]);
+  stepper_print(Stepper2, enc_angle[2]);
+
   print_target_coords();
 
   delay(step_delay);
