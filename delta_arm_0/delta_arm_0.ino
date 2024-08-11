@@ -156,6 +156,7 @@ void check_input(){
   }
 }
 
+//добавить прямую кинематику
 void get_angles(){
   if (i!=8){
     return;
@@ -165,7 +166,7 @@ void get_angles(){
   int angle_1 = target_pos_uncut / 1000 % 1000;
   int angle_2 = target_pos_uncut % 1000 % 1000;
 
-  if ((angle_0 <= 0) or (angle_0 >= 330)){
+  if ((angle_0 <= 30) or (angle_0 >= 330)){
     return;
   }
   if ((angle_1 >= 120) or (angle_1 <= -120)){
@@ -190,7 +191,7 @@ void get_coords(){
   int dist = target_pos_uncut / 1000 % 1000;
   int height = target_pos_uncut % 1000 % 1000;
 
-  if ((fi <= 0) or (fi >= 330)){
+  if ((fi <= 30) or (fi >= 330)){
     return;
   }
   if ((dist <= -70) or 
@@ -226,6 +227,8 @@ void read_input(){
   switch (input){
     case endl:
       get_coords();
+      //get_target_pos_0();
+      //get_target_pos_1_2();
       break;
 
     case angles:
@@ -393,8 +396,6 @@ void loop() {
 
   check_input();
   read_input();
-  //get_target_pos_0();
-  //get_target_pos_1_2();
   
   fix_position(target_pos[0], enc_angle[0], Stepper0, clockwise_direction[0]);
   fix_position(target_pos[1], enc_angle[1], Stepper1, clockwise_direction[1]);
