@@ -8,14 +8,6 @@
 #define ARM_PIN 0
 byte enc_adress[] = {5, 6, 7};
 
-//mm
-const int element_length[] = {0, 70, 70, 114}; //from the model
-const int element_height[] = {70, -29, 0, 0};
-
-const int default_fi = 180;
-const int default_dist = 230;
-const int default_height = 50;
-
 const char default_string[] = "---------";
 const char endl = 'e';
 const char pause = 'p';
@@ -23,6 +15,14 @@ const char play = 'c';
 const char grab = 'g';
 const char angles = 'a';
 const char default_pos = 'd';
+
+//mm
+const int element_length[] = {0, 70, 70, 114}; //from the model
+const int element_height[] = {70, -29, 0, 0};
+
+const int default_fi = 180;
+const int default_dist = 230;
+const int default_height = 50;
 
 const float angle_dislocation[] = {-22.94, -11.23 + 180, -5.27 + 180};
 const byte delta = 1;
