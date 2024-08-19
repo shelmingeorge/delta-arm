@@ -5,7 +5,7 @@
 #include <Servo.h>
 #include <math.h>
 
-#define ARM_PIN 0
+#define ARM_PIN 1
 byte enc_adress[] = {5, 6, 7};
 
 const char default_string[] = "---------";
@@ -52,7 +52,11 @@ AccelStepper Stepper2(1,3,2);
 AS5600 encoder0;  //dir pin connected to 5v
 AS5600 encoder1;  //dir pin connected to gnd
 AS5600 encoder2;  //dir pin connected to 5v
+
 Servo Arm;
+
+AccelStepper element_steppers[] = {Stepper0, Stepper1, Stepper2};
+AS5600 element_encoders[] = {encoder0, encoder1, encoder2};
 
 
 void TCA9548A(uint8_t bus){
@@ -227,7 +231,7 @@ void read_input(){
   switch (input){
     case endl:
       get_coords();
-      //get_target_pos_0();
+      get_target_pos_0();
       //get_target_pos_1_2();
       break;
 
@@ -361,23 +365,51 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
 }
 
 
+void servo_setup(int index){
+  if ((index < 0) or (index > 2)){
+    return;
+  }
+
+  TCA9548A(enc_adress[index]);
+  encoder_setup(element_encoders[index]);
+  stepper_setup(element_steppers[index], angle(element_encoders[index], angle_dislocation[index]));
+}
+
+float servo_angle(int index){
+  if ((index < 0) or (index > 2)){
+    return;
+  }
+
+  TCA9548A(enc_adress[index]);
+  return angle(element_encoders[index], angle_dislocation[index]);
+}
+
+void fix_servo_position(int index){
+  if ((index < 0) or (index > 2)){
+    return;
+  }
+
+  fix_position(target_pos[index], enc_angle[index], element_steppers[index], clockwise_direction[index]);
+}
+
+void print_servo_position(int index){
+  if ((index < 0) or (index > 2)){
+    return;
+  }
+
+  stepper_print(element_steppers[index], enc_angle[index]);
+}
+
+
 void setup() {
   Serial.begin(115200);
   Wire.begin();
 
   arm_setup(Arm);
 
-  TCA9548A(enc_adress[0]);
-  encoder_setup(encoder0);
-  stepper_setup(Stepper0, angle(encoder0, angle_dislocation[0]));
-
-  TCA9548A(enc_adress[1]);
-  encoder_setup(encoder1);
-  stepper_setup(Stepper1, angle(encoder1, angle_dislocation[1]));
-
-  TCA9548A(enc_adress[2]);
-  encoder_setup(encoder2);
-  stepper_setup(Stepper2, angle(encoder2, angle_dislocation[2]));
+  servo_setup(0);
+  servo_setup(1);
+  servo_setup(2);
 
   delay(2000);
 }
@@ -385,27 +417,22 @@ void setup() {
 
 void loop() {
 
-  TCA9548A(enc_adress[0]);
-  enc_angle[0] = angle(encoder0, angle_dislocation[0]);
-
-  TCA9548A(enc_adress[1]);
-  enc_angle[1] = angle(encoder1, angle_dislocation[1]);
-
-  TCA9548A(enc_adress[2]);
-  enc_angle[2] = angle(encoder0, angle_dislocation[2]);
+  enc_angle[0] = servo_angle(0);
+  enc_angle[1] = servo_angle(1);
+  enc_angle[2] = servo_angle(2);
 
   check_input();
   read_input();
   
-  fix_position(target_pos[0], enc_angle[0], Stepper0, clockwise_direction[0]);
-  fix_position(target_pos[1], enc_angle[1], Stepper1, clockwise_direction[1]);
-  fix_position(target_pos[2], enc_angle[2], Stepper2, clockwise_direction[2]);
+  fix_servo_position(0);
+  fix_servo_position(1);
+  fix_servo_position(2);
   
   speed_regulation(target_pos[0], enc_angle[0]);
   
-  stepper_print(Stepper0, enc_angle[0]);
-  stepper_print(Stepper1, enc_angle[1]);
-  stepper_print(Stepper2, enc_angle[2]);
+  print_servo_position(0);
+  print_servo_position(1);
+  print_servo_position(2);
 
   print_target_coords();
 
