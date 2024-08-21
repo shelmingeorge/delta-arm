@@ -49,14 +49,14 @@ int target_pos[] = {int (target_fi / 1.8), 0, 0}; //цилиндрические
 AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
 AccelStepper Stepper2(1,3,2);
-AS5600 encoder0;  //dir pin connected to 5v
-AS5600 encoder1;  //dir pin connected to gnd
-AS5600 encoder2;  //dir pin connected to 5v
+AccelStepper element_steppers[] = {Stepper0, Stepper1, Stepper2};
+
+//AS5600 encoder0;  //dir pin connected to 5v
+//AS5600 encoder1;  //dir pin connected to gnd
+//AS5600 encoder2;  //dir pin connected to 5v
+AS5600 element_encoders[3]; //= {encoder0, encoder1, encoder2};
 
 Servo Arm;
-
-AccelStepper element_steppers[] = {Stepper0, Stepper1, Stepper2};
-AS5600 element_encoders[] = {encoder0, encoder1, encoder2};
 
 
 void TCA9548A(uint8_t bus){
@@ -160,7 +160,6 @@ void check_input(){
   }
 }
 
-//добавить прямую кинематику
 void get_angles(){
   if (i!=8){
     return;
@@ -435,6 +434,5 @@ void loop() {
   print_servo_position(2);
 
   print_target_coords();
-
   delay(step_delay);
 }
