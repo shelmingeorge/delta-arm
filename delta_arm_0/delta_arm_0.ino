@@ -6,7 +6,7 @@
 #include <math.h>
 
 #define ARM_PIN 1
-byte enc_adress[] = {5, 6, 7};
+const byte enc_adress[] = {5, 6, 7};
 
 const char default_string[] = "---------";
 const char endl = 'e';
@@ -25,6 +25,7 @@ const int default_dist = 230;
 const int default_height = 50;
 
 const float angle_dislocation[] = {-22.94, -11.23 + 180, -5.27 + 180};
+const float reduction[] = {1.0, 4.0, 1.0};
 const byte delta = 1;
 
 const bool clockwise_direction[] = {0, 0, 0};
@@ -247,7 +248,7 @@ void read_input(){
 }
 
 void get_target_pos_0(){
-  target_pos[0] = target_fi / 1.8;
+  target_pos[0] = int(target_fi / 1.8 * reduction[0]);
 }
 
 void get_target_pos_1_2(){
@@ -261,7 +262,7 @@ void get_target_pos_1_2(){
     return;
   }
 
-  q2 = -1 * acos(cos_q3) * 180 / M_PI;
+  q2 = acos(cos_q3) * 180 / M_PI;
   
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= element_length[0] + element_length[1]){
@@ -283,8 +284,8 @@ void get_target_pos_1_2(){
   if ((q1 >= 120) or (q1 <= -120)){
     return;
   }
-  target_pos[1] = int(q1 / 1.8);
-  target_pos[2] = int(q2 / 1.8);
+  target_pos[1] = int(q1 / 1.8 * reduction[1]);
+  target_pos[2] = int(q2 / 1.8 * reduction[2]);
 
 }
 
@@ -316,20 +317,20 @@ float angle(AS5600 enc, float angle_dislocation){
   return (float(enc.rawAngle()) / 4096 * 360) - angle_dislocation;
 }
 
-int current_position(float current_angle){
-  return int((current_angle)/1.8);
+int current_position(float current_angle, float reduct){
+  return int((current_angle) / 1.8 * reduct);
 }
 
-void stepper_setup(AccelStepper Stepper, float current_angle){
+void stepper_setup(AccelStepper Stepper, float current_angle, float reduct){
   Stepper.setMaxSpeed(100);
   Stepper.setAcceleration(50);
-  Stepper.setCurrentPosition(current_position(current_angle));
+  Stepper.setCurrentPosition(current_position(current_angle, reduct));
 }
 
-void stepper_print(AccelStepper Stepper, float angle){
+void stepper_print(AccelStepper Stepper, float angle, float reduct){
   Serial.print(angle);
   Serial.print("\t ");
-  Serial.print(current_position(angle));
+  Serial.print(current_position(angle, reduct));
   //Serial.print("\t");
   //Serial.print(Stepper.currentPosition());
   Serial.print("\t");
@@ -337,26 +338,28 @@ void stepper_print(AccelStepper Stepper, float angle){
 
 //продумать для нескольких двигателей
 //можно находить какому двигателю надо ехать дальше/ближе и выбирать его для отсчета
-void speed_regulation(int target_position, float current_angle){
+void speed_regulation(int target_position, float current_angle, float reduct){
   float k_p = 200.0;
-  float div = 1 / float(abs(current_position(current_angle) - target_position) + 5);
+  float div = 1 / float(abs(current_position(current_angle, reduct) - target_position) + 5);
   step_delay = int(div * k_p) + 5;
 
 }
 
-void fix_position(int target_position, float current_angle, AccelStepper Stepper, bool direction){
+void fix_position(int target_position, float current_angle, AccelStepper Stepper, bool direction, float reduct){
   int step = 1;
+  int pos = current_position(current_angle, reduct);
   if (direction){
     step *= (-1);
   }
 
-  if (abs(current_position(current_angle) - target_position) <= delta){
+  if (abs(pos - target_position) <= delta){
     Stepper.setCurrentPosition(target_position);
+    return;
   }
-  if (current_position(current_angle) - target_position > delta){
+  if (pos - target_position > delta){
     Stepper.move(-step);
   }
-  if (current_position(current_angle) - target_position < -delta){
+  if (pos - target_position < -delta){
     Stepper.move(step);
   }
 
@@ -371,7 +374,7 @@ void servo_setup(int index){
 
   TCA9548A(enc_adress[index]);
   encoder_setup(element_encoders[index]);
-  stepper_setup(element_steppers[index], angle(element_encoders[index], angle_dislocation[index]));
+  stepper_setup(element_steppers[index], angle(element_encoders[index], angle_dislocation[index]), reduction[index]);
 }
 
 float servo_angle(int index){
@@ -388,7 +391,7 @@ void fix_servo_position(int index){
     return;
   }
 
-  fix_position(target_pos[index], enc_angle[index], element_steppers[index], clockwise_direction[index]);
+  fix_position(target_pos[index], enc_angle[index], element_steppers[index], clockwise_direction[index], reduction[index]);
 }
 
 void print_servo_position(int index){
@@ -396,7 +399,7 @@ void print_servo_position(int index){
     return;
   }
 
-  stepper_print(element_steppers[index], enc_angle[index]);
+  stepper_print(element_steppers[index], enc_angle[index], reduction[index]);
 }
 
 
@@ -427,7 +430,7 @@ void loop() {
   fix_servo_position(1);
   fix_servo_position(2);
   
-  speed_regulation(target_pos[0], enc_angle[0]);
+  speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
   
   print_servo_position(0);
   print_servo_position(1);
