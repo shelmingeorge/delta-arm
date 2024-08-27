@@ -65,6 +65,23 @@ void get_coords(){
   if (i!=8){
     return;
   }
+  String string_fi = string;
+  String string_dist = string;
+  String string_height = string;
+  string_fi.remove(3);
+  string_dist.remove(0, 3);
+  string_dist.remove(3);
+  string_height.remove(0, 6);
+
+  Serial.print(string_fi);
+  Serial.print("\t");
+  Serial.print(string_dist);
+  Serial.print("\t");
+  Serial.print(string_height);
+  Serial.print("\t");
+  Serial.print(string_height.toInt());
+  Serial.print("\t");
+
   target_pos_uncut = string.toInt();
   Serial.print(target_pos_uncut);
   Serial.print("\t");
@@ -97,7 +114,7 @@ void get_coords(){
 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
 }
 
