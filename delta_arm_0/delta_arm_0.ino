@@ -16,7 +16,7 @@ const char grab = 'g';
 const char angles = 'a';
 const char default_pos = 'd';
 
-//mm
+//mm //заменить на новые размеры
 const int element_length[] = {0, 70, 70, 114}; //from the model
 const int element_height[] = {70, -29, 0, 0};
 
@@ -24,7 +24,7 @@ const int default_fi = 180;
 const int default_dist = 230;
 const int default_height = 50;
 
-const float angle_dislocation[] = {-22.94, -11.23 + 180, -5.27 + 180};
+const float angle_dislocation[] = {-22.94, 6.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const byte delta = 1;
 
@@ -223,6 +223,7 @@ void get_coords(){
   target_height = height;
 }
 
+//отключена обратная кинематика
 void read_input(){
   if (string == default_string){
     return;
@@ -262,7 +263,7 @@ void get_target_pos_1_2(){
     return;
   }
 
-  q2 = acos(cos_q3) * 180 / M_PI;
+  q2 = -1 * acos(cos_q3) * 180 / M_PI;
   
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= element_length[0] + element_length[1]){
@@ -280,8 +281,8 @@ void get_target_pos_1_2(){
   tg_2 /= element_length[3] * cos(q2) + element_length[2];
 
   q1 = atan(tg_1) - atan(tg_2);
-  q1 *= 180 / M_PI;
-  if ((q1 >= 120) or (q1 <= -120)){
+  q1 *= -1 * 180 / M_PI;
+  if ((q1 >= 20) or (q1 <= -120)){
     return;
   }
   target_pos[1] = int(q1 / 1.8 * reduction[1]);
@@ -430,12 +431,11 @@ void loop() {
   fix_servo_position(1);
   fix_servo_position(2);
   
-  speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
-  
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
-
   print_target_coords();
+
+  speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
   delay(step_delay);
 }
