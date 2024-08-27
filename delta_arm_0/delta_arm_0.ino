@@ -28,7 +28,7 @@ const float angle_dislocation[] = {-22.94, 6.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const byte delta = 1;
 
-const bool clockwise_direction[] = {0, 0, 0};
+const bool clockwise_direction[] = {0, 1, 0};
 
 String string = default_string;
 
@@ -36,7 +36,6 @@ int step_delay = 15;
 
 bool is_grabbed = 1;
 char input = '0';
-long target_pos_uncut = 0;
 
 int target_fi = default_fi;
 int target_dist = default_dist;
@@ -156,7 +155,7 @@ void check_input(){
   input = Serial.read();
   add_char(input);
 
-  if ((i < 8) and (input != endl)){
+  if ((i < 8) and ((input != endl) or (input != angles))){
     i++;
   }
 }
@@ -165,24 +164,31 @@ void get_angles(){
   if (i!=8){
     return;
   }
-  target_pos_uncut = string.toInt();
-  int angle_0 = target_pos_uncut / 1000 / 1000;
-  int angle_1 = target_pos_uncut / 1000 % 1000;
-  int angle_2 = target_pos_uncut % 1000 % 1000;
+  String string_q0 = string;
+  String string_q1 = string;
+  String string_q2 = string;
+  string_q0.remove(3);
+  string_q1.remove(0, 3);
+  string_q1.remove(3);
+  string_q2.remove(0, 6);
+
+  int angle_0 = string_q0.toInt();
+  int angle_1 = string_q1.toInt();
+  int angle_2 = string_q2.toInt();
 
   if ((angle_0 <= 30) or (angle_0 >= 330)){
     return;
   }
-  if ((angle_1 >= 120) or (angle_1 <= -120)){
+  if ((angle_1 >= 120) or (angle_1 <= -20)){
     return;
   }
   if ((angle_2 >= 120) or (angle_2 <= -120)){
     return;
   }
 
-  target_pos[0] = int(double(angle_0) / 1.8);
-  target_pos[1] = int(double(angle_1) / 1.8);
-  target_pos[2] = int(double(angle_2) / 1.8);
+  target_pos[0] = int(double(angle_0) / 1.8 * reduction[0]);
+  target_pos[1] = int(double(angle_1) / 1.8 * reduction[1]);
+  target_pos[2] = int(double(angle_2) / 1.8 * reduction[2]);
 
 }
 
@@ -190,10 +196,18 @@ void get_coords(){
   if (i!=8){
     return;
   }
-  target_pos_uncut = string.toInt();
-  int fi = target_pos_uncut / 1000 / 1000;
-  int dist = target_pos_uncut / 1000 % 1000;
-  int height = target_pos_uncut % 1000 % 1000;
+
+  String string_fi = string;
+  String string_height = string;
+  String string_dist = string;
+  string_fi.remove(3);
+  string_dist.remove(0, 3);
+  string_dist.remove(3);
+  string_height.remove(0, 6);
+
+  int fi = string_fi.toInt();
+  int dist = string_dist.toInt();
+  int height = string_height.toInt();
 
   if ((fi <= 30) or (fi >= 330)){
     return;
@@ -221,31 +235,6 @@ void get_coords(){
   target_fi = fi;
   target_dist = dist;
   target_height = height;
-}
-
-//отключена обратная кинематика
-void read_input(){
-  if (string == default_string){
-    return;
-  }
-
-  switch (input){
-    case endl:
-      get_coords();
-      get_target_pos_0();
-      //get_target_pos_1_2();
-      break;
-
-    case angles:
-      get_angles();
-      break;
-
-    default:
-      return;
-  }
-
-  string = default_string;
-  i = 0;
 }
 
 void get_target_pos_0(){
@@ -290,12 +279,34 @@ void get_target_pos_1_2(){
 
 }
 
+//отключена обратная кинематика
+void read_input(){
+  if (string == default_string){
+    return;
+  }
+
+  switch (input){
+    case endl:
+      get_coords();
+      get_target_pos_0();
+      //get_target_pos_1_2();
+      break;
+
+    case angles:
+      get_angles();
+      break;
+
+    default:
+      return;
+  }
+
+  string = default_string;
+  i = 0;
+}
+
 void print_target_coords(){
   Serial.print("\n");
   //Serial.println(string);
-  
-  Serial.print(target_pos_uncut);
-  Serial.print("\t");
 
   Serial.print(target_fi);
   Serial.print("\t");
@@ -303,6 +314,18 @@ void print_target_coords(){
   Serial.print("\t");
   Serial.println(target_height);
 }
+
+void print_target_positions(){
+  Serial.print("\n");
+  //Serial.println(string);
+
+  Serial.print(target_pos[0]);
+  Serial.print("\t");
+  Serial.print(target_pos[1]);
+  Serial.print("\t");
+  Serial.println(target_pos[2]);
+}
+
 
 void encoder_setup(AS5600 enc){
   enc.begin();
@@ -434,7 +457,8 @@ void loop() {
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
-  print_target_coords();
+  //print_target_coords();
+  print_target_positions();
 
   speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
   delay(step_delay);
