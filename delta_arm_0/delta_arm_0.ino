@@ -346,8 +346,8 @@ int current_position(float current_angle, float reduct){
 }
 
 void stepper_setup(AccelStepper Stepper, float current_angle, float reduct){
-  Stepper.setMaxSpeed(100);
-  Stepper.setAcceleration(50);
+  Stepper.setMaxSpeed(int (50 * reduct));
+  Stepper.setAcceleration(int(50 * reduct));
   Stepper.setCurrentPosition(current_position(current_angle, reduct));
 }
 
