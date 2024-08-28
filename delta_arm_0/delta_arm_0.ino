@@ -32,7 +32,7 @@ const bool clockwise_direction[] = {0, 1, 0};
 
 String string = default_string;
 
-int step_delay = 15;
+int step_delay = 20;
 
 bool is_grabbed = 1;
 char input = '0';
@@ -173,9 +173,10 @@ void get_angles(){
   string_q2.remove(0, 6);
 
   int angle_0 = string_q0.toInt();
-  int angle_1 = string_q1.toInt();
+  int angle_1 = -1 * string_q1.toInt();
   int angle_2 = string_q2.toInt();
 
+/*
   if ((angle_0 <= 30) or (angle_0 >= 330)){
     return;
   }
@@ -185,7 +186,7 @@ void get_angles(){
   if ((angle_2 >= 120) or (angle_2 <= -120)){
     return;
   }
-
+*/
   target_pos[0] = int(double(angle_0) / 1.8 * reduction[0]);
   target_pos[1] = int(double(angle_1) / 1.8 * reduction[1]);
   target_pos[2] = int(double(angle_2) / 1.8 * reduction[2]);
@@ -326,7 +327,6 @@ void print_target_positions(){
   Serial.println(target_pos[2]);
 }
 
-
 void encoder_setup(AS5600 enc){
   enc.begin();
   Serial.print("Connect: ");
@@ -365,7 +365,7 @@ void stepper_print(AccelStepper Stepper, float angle, float reduct){
 void speed_regulation(int target_position, float current_angle, float reduct){
   float k_p = 200.0;
   float div = 1 / float(abs(current_position(current_angle, reduct) - target_position) + 5);
-  step_delay = int(div * k_p) + 5;
+  step_delay = int(div * k_p) + 15;
 
 }
 
