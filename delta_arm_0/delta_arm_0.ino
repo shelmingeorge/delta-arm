@@ -24,11 +24,11 @@ const int default_fi = 180;
 const int default_dist = 230;
 const int default_height = 50;
 
-const float angle_dislocation[] = {-22.94, 6.42 + 180, -5.27 + 180};
+const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const byte delta = 1;
 
-const bool clockwise_direction[] = {0, 1, 0};
+const bool clockwise_direction[] = {1, 1, 0};
 
 String string = default_string;
 
@@ -365,7 +365,7 @@ void stepper_print(AccelStepper Stepper, float angle, float reduct){
 void speed_regulation(int target_position, float current_angle, float reduct){
   float k_p = 200.0;
   float div = 1 / float(abs(current_position(current_angle, reduct) - target_position) + 5);
-  step_delay = int(div * k_p) + 15;
+  step_delay = int(div * k_p) + 5;
 
 }
 
