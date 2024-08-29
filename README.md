@@ -28,8 +28,6 @@ https://www.arduino.cc/reference/en/libraries/ti-tca9548a/
 
 
 
-All other elements but screws and nuts are 3-d printed with PLA.
+All other elements but bearings, screws and nuts are 3-d printed with PLA.
 
-All functions are ready and code is prepared for tests.
-
-Printed actuator to add lift forse for a second stepping motor, assembling all parts together
+Mechanical part is done. Direct control works fine but some improvements are needed. Fixing broken grabber(sg-90).
