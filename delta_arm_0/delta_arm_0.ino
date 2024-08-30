@@ -22,16 +22,21 @@ const bool clockwise_direction[] = {1, 1, 0};
 
 
 const char default_string[] = "---------";
+String string = default_string;
+
 const char endl = 'e';
 const char pause = 'p';
 const char play = 'c';
 const char grab = 'g';
 const char angles = 'a';
-const char default_pos = 'd';
-
-String string = default_string;
+const char default_pos = 'b';
+const char up = 'u';
+const char down = 'd';
+const char left = 'l';
+const char right = 'r';
 
 const byte delta = 1;
+const int move_steps_per_command = 5;
 int step_delay = 20;
 
 bool is_grabbed = 1;
@@ -121,6 +126,24 @@ void set_default_pos(){
   target_height = default_height;
 }
 
+void move_up(){
+  target_pos[1] -= int(move_steps_per_command * reduction[1]);
+  target_pos[2] += int(move_steps_per_command * reduction[2]);
+}
+
+void move_down(){
+  target_pos[1] += int(move_steps_per_command * reduction[1]);
+  target_pos[2] -= int(move_steps_per_command * reduction[2]);
+}
+
+void move_left(){
+  target_pos[0] += int(move_steps_per_command * reduction[0]);
+}
+
+void move_right(){
+  target_pos[0] -= int(move_steps_per_command * reduction[0]);
+}
+
 void add_char(char input_char){
       switch (input_char)
     {
@@ -142,6 +165,22 @@ void add_char(char input_char){
         waiting();
         break;
       
+      case up:
+        move_up();
+        break;
+      
+      case down:
+        move_down();
+        break;   
+      
+      case left:
+        move_left();
+        break;
+      
+      case right:
+        move_right();
+        break;
+                       
       default:
         string[i] = input_char;
     }
@@ -389,7 +428,6 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
   Stepper.run();
 }
 
-
 void servo_setup(int index){
   if ((index < 0) or (index > 2)){
     return;
@@ -424,6 +462,7 @@ void print_servo_position(int index){
 
   stepper_print(element_steppers[index], enc_angle[index], reduction[index]);
 }
+
 
 
 void setup() {
