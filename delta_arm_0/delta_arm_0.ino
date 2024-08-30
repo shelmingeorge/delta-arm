@@ -8,6 +8,19 @@
 #define ARM_PIN 1
 const byte enc_adress[] = {5, 6, 7};
 
+//mm //заменить на новые размеры
+const int element_length[] = {0, 70, 70, 114}; //from the model
+const int element_height[] = {70, -29, 0, 0};
+const int default_fi = 180;
+const int default_dist = 230;
+const int default_height = 50;
+
+const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
+const float reduction[] = {1.0, 4.0, 1.0};
+const bool clockwise_direction[] = {1, 1, 0};
+
+
+
 const char default_string[] = "---------";
 const char endl = 'e';
 const char pause = 'p';
@@ -16,22 +29,9 @@ const char grab = 'g';
 const char angles = 'a';
 const char default_pos = 'd';
 
-//mm //заменить на новые размеры
-const int element_length[] = {0, 70, 70, 114}; //from the model
-const int element_height[] = {70, -29, 0, 0};
-
-const int default_fi = 180;
-const int default_dist = 230;
-const int default_height = 50;
-
-const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
-const float reduction[] = {1.0, 4.0, 1.0};
-const byte delta = 1;
-
-const bool clockwise_direction[] = {1, 1, 0};
-
 String string = default_string;
 
+const byte delta = 1;
 int step_delay = 20;
 
 bool is_grabbed = 1;
@@ -46,14 +46,13 @@ byte i = 0;
 float enc_angle[] = {0.0, 0.0, 0.0};
 int target_pos[] = {int (target_fi / 1.8), 0, 0}; //цилиндрические координаты
 
+
+
 AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
 AccelStepper Stepper2(1,3,2);
 AccelStepper element_steppers[] = {Stepper0, Stepper1, Stepper2};
 
-//AS5600 encoder0;  //dir pin connected to 5v
-//AS5600 encoder1;  //dir pin connected to gnd
-//AS5600 encoder2;  //dir pin connected to 5v
 AS5600 element_encoders[3]; //= {encoder0, encoder1, encoder2};
 
 Servo Arm;
