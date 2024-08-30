@@ -118,7 +118,9 @@ void waiting(){
 }
 
 void set_default_pos(){
-int target_pos[] = {default_positions[0], default_positions[1], default_positions[2]};
+  target_pos[0] = default_positions[0];
+  target_pos[1] = default_positions[1];
+  target_pos[2] = default_positions[2];
 }
 
 void move_up(){
