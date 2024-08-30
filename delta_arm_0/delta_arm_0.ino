@@ -11,14 +11,10 @@ const byte enc_adress[] = {5, 6, 7};
 //mm //заменить на новые размеры
 const int element_length[] = {0, 70, 70, 114}; //from the model
 const int element_height[] = {70, -29, 0, 0};
-const int default_fi = 180;
-const int default_dist = 230;
-const int default_height = 50;
 
 const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const bool clockwise_direction[] = {1, 1, 0};
-
 
 
 const char default_string[] = "---------";
@@ -29,7 +25,7 @@ const char pause = 'p';
 const char play = 'c';
 const char grab = 'g';
 const char angles = 'a';
-const char default_pos = 'b';
+const char default_pos = ' ';
 const char up = 'u';
 const char down = 'd';
 const char left = 'l';
@@ -42,14 +38,15 @@ int step_delay = 20;
 bool is_grabbed = 1;
 char input = '0';
 
-int target_fi = default_fi;
-int target_dist = default_dist;
-int target_height = default_height;
+int target_fi = 0;
+int target_dist = 0;
+int target_height = 0;
 
 byte i = 0;
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-int target_pos[] = {int (target_fi / 1.8), 0, 0}; //цилиндрические координаты
+const int default_positions[] = {100, 0, 0};
+int target_pos[] = {default_positions[0], default_positions[1], default_positions[2]}; //цилиндрические координаты
 
 
 
@@ -121,9 +118,7 @@ void waiting(){
 }
 
 void set_default_pos(){
-  target_fi = default_fi;
-  target_dist = default_dist;
-  target_height = default_height;
+int target_pos[] = {default_positions[0], default_positions[1], default_positions[2]};
 }
 
 void move_up(){
@@ -374,7 +369,7 @@ void encoder_setup(AS5600 enc){
 
 float angle(AS5600 enc, float angle_dislocation){
   if (!enc.isConnected()){
-    return default_fi;
+    return 400;
   }
   return (float(enc.rawAngle()) / 4096 * 360) - angle_dislocation;
 }
