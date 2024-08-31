@@ -5,7 +5,7 @@
 #include <Servo.h>
 #include <math.h>
 
-#define ARM_PIN 1
+#define ARM_PIN 11
 const byte enc_adress[] = {5, 6, 7};
 
 //mm //заменить на новые размеры
@@ -477,7 +477,7 @@ void setup() {
 
 
 void loop() {
-
+  
   enc_angle[0] = servo_angle(0);
   enc_angle[1] = servo_angle(1);
   enc_angle[2] = servo_angle(2);
@@ -497,4 +497,5 @@ void loop() {
 
   speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
   delay(step_delay);
+
 }
