@@ -30,4 +30,5 @@ https://www.arduino.cc/reference/en/libraries/ti-tca9548a/
 
 All other elements but bearings, screws and nuts are 3-d printed with PLA.
 
-Mechanical part is done. Direct control works fine but some improvements are needed. Fixing broken grabber(sg-90).
+Mechanical part is done. Direct control works fine but some improvements are needed.
+I will continue updating the code, but tecnically the project has achieved its main goal.
