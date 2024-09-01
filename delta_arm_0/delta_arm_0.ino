@@ -73,15 +73,15 @@ void arm_setup(Servo my_servo){
 
 void arm_lock(Servo my_servo){
   int position = my_servo.read();
-  if (position==0){
+  if (position <= 40){
     return;
   }
-  my_servo.write(0);
+  my_servo.write(40);
 }
 
 void arm_unlock(Servo my_servo){
   int position = my_servo.read();
-  if (position==150){
+  if (position >= 150){
     return;
   }
   my_servo.write(150);
@@ -410,7 +410,10 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
   if (direction){
     step *= (-1);
   }
-
+  if (current_angle > 359){
+    return;
+  }
+  
   if (abs(pos - target_position) <= delta){
     Stepper.setCurrentPosition(target_position);
     return;
