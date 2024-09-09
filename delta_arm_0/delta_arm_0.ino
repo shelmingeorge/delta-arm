@@ -16,7 +16,6 @@ const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const bool clockwise_direction[] = {1, 1, 0};
 
-
 const char default_string[] = "---------";
 String string = default_string;
 
@@ -33,7 +32,6 @@ const char right = 'r';
 
 const byte delta = 1;
 const int move_steps_per_command = 5;
-int step_delay = 20;
 
 bool is_grabbed = 1;
 char input = '0';
@@ -49,14 +47,12 @@ const int default_positions[] = {100, 0, 0};
 int target_pos[] = {default_positions[0], default_positions[1], default_positions[2]}; //цилиндрические координаты
 
 
-
 AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
 AccelStepper Stepper2(1,3,2);
 AccelStepper element_steppers[] = {Stepper0, Stepper1, Stepper2};
 
 AS5600 element_encoders[3]; //= {encoder0, encoder1, encoder2};
-
 Servo Arm;
 
 
@@ -398,26 +394,31 @@ void stepper_print(AccelStepper Stepper, float angle, float reduct){
 //продумать для нескольких двигателей
 //можно находить какому двигателю надо ехать дальше/ближе и выбирать его для отсчета
 void speed_regulation(int target_position, float current_angle, float reduct){
+  int step_delay = 20;
+
   float k_p = 200.0;
   float div = 1 / float(abs(current_position(current_angle, reduct) - target_position) + 5);
   step_delay = int(div * k_p) + 5;
 
+  delay(step_delay);
 }
 
 void fix_position(int target_position, float current_angle, AccelStepper Stepper, bool direction, float reduct){
-  int step = 1;
-  int pos = current_position(current_angle, reduct);
-  if (direction){
-    step *= (-1);
-  }
   if (current_angle > 359){
     return;
   }
+ 
+  int step = 1;
+  int pos = current_position(current_angle, reduct);
   
   if (abs(pos - target_position) <= delta){
     Stepper.setCurrentPosition(target_position);
     return;
   }
+  if (direction){
+    step *= (-1);
+  }
+  
   if (pos - target_position > delta){
     Stepper.move(-step);
   }
@@ -499,6 +500,4 @@ void loop() {
   print_target_positions();
 
   speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
-  delay(step_delay);
-
 }
