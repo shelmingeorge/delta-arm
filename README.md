@@ -31,3 +31,13 @@ All other elements but bearings, screws and nuts are 3-d printed with PLA.
 
 Mechanical part is done. Direct control works fine but some improvements are needed.
 I will continue updating the code, but tecnically the project has achieved its main goal.
+
+
+part 2 - neural network setting in raspberry pi 4
+
+
+python libraries:
+
+picamera2, opencv-python, tensorflow, ultralytics, ultralytics[export]  - installed by pip
+
+
