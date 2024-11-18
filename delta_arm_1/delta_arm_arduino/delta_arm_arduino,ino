@@ -8,11 +8,6 @@
 #define ARM_PIN 11
 const byte enc_adress[] = {5, 6, 7};
 
-enum Control_chars : char {endl = 'e', 
-pause = 'p', play = 'c', grab = 'g', angles = 'a', default_pos = ' ', 
-up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b', 
-write = 'w'};
-
 //mm //заменить на новые размеры
 const int element_length[] = {0, 70, 70, 114}; //from the model
 const int element_height[] = {70, -29, 0, 0};
@@ -23,6 +18,27 @@ const bool clockwise_direction[] = {1, 1, 0};
 
 const char default_string[] = "---------";
 String string = default_string;
+
+enum Control_chars : char {endl = 'e', 
+pause = 'p', play = 'c', grab = 'g', angles = 'a', default_pos = ' ', 
+up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b', 
+write_pos = 'w'};
+
+/*
+const char endl = 'e';
+const char pause = 'p';
+const char play = 'c';
+const char grab = 'g';
+const char angles = 'a';
+const char default_pos = ' ';
+const char up = 'u';
+const char down = 'd';
+const char left = 'l';
+const char right = 'r';
+const char write = 'w';
+const char forward = 'f';
+const char backward = 'b';
+*/
 
 const byte delta = 1;
 const int move_steps_per_command = 5;
@@ -166,6 +182,10 @@ void add_char(char input_char){
       
       case right:
         move_right();
+        break;
+
+      case write_pos:
+        print_all_info();
         break;
                        
       default:
@@ -458,6 +478,14 @@ void print_servo_position(int index){
   stepper_print(element_steppers[index], enc_angle[index], reduction[index]);
 }
 
+void print_all_info(){
+  print_servo_position(0);
+  print_servo_position(1);
+  print_servo_position(2);
+  //print_target_coords();
+  print_target_positions();
+
+}
 
 
 void setup() {
@@ -487,11 +515,11 @@ void loop() {
   fix_servo_position(1);
   fix_servo_position(2);
   
-  print_servo_position(0);
-  print_servo_position(1);
-  print_servo_position(2);
+  //print_servo_position(0);
+  //print_servo_position(1);
+  //print_servo_position(2);
   //print_target_coords();
-  print_target_positions();
+  //print_target_positions();
 
   speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
 }
