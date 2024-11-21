@@ -19,26 +19,11 @@ const bool clockwise_direction[] = {1, 1, 0};
 const char default_string[] = "---------";
 String string = default_string;
 
-enum Control_chars : char {endl = 'e', 
-pause = 'p', play = 'c', grab = 'g', angles = 'a', default_pos = ' ', 
+enum Control_chars : char {endl = 'e', angles = 'a',
+pause = 'p', play = 'c', grab = 'g', default_pos = ' ', 
 up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b', 
 write_pos = 'w'};
 
-/*
-const char endl = 'e';
-const char pause = 'p';
-const char play = 'c';
-const char grab = 'g';
-const char angles = 'a';
-const char default_pos = ' ';
-const char up = 'u';
-const char down = 'd';
-const char left = 'l';
-const char right = 'r';
-const char write = 'w';
-const char forward = 'f';
-const char backward = 'b';
-*/
 
 const byte delta = 1;
 const int move_steps_per_command = 5;
@@ -127,6 +112,55 @@ void set_default_pos(){
   target_pos[0] = default_positions[0];
   target_pos[1] = default_positions[1];
   target_pos[2] = default_positions[2];
+}
+
+bool check_boxes(int target_pos_0, int target_pos_1, int terget_pos_2){
+  double angle_0 = float(target_pos_0) * 1.8 / reduction[1];
+  if ((angle_0 < 30) and (angle_0 > 330)){
+    return false;
+  }
+
+
+  const int hitbox_coords[] = {-35, 125, 0, 75}; //{dist_min, dist_max, height_min, height_max}
+  const int hurtbox_0_w = 45;
+  const int hurtbox_0_h = 45;
+  const int hurtbox_1_w = 130;
+  const int hurtbox_1_h = 50;
+
+  float target_angles[] = {
+  float(target_pos_1 * 1.8 / reduction[1]), 
+  float(target_pos_2 * 1.8 / reduction[2])};
+
+//тут пересчет хартбоксов
+//ПРОВЕРИТЬ ЗНАКИ И НАПРАВЛЕНИЯ ОТСЧЕТА УГЛОВ
+  int hurtbox_0_coords[] = {
+  element_length[0]+element_length[1]+element_length[2] - int(hurtbox_0_w / 2 * cos(target_angles[0])), 
+  element_length[0]+element_length[1]+element_length[2] + int(hurtbox_0_w / 2 * cos(target_angles[0])),
+  element_height[0]+element_height[1]+element_height[2] - int(hurtbox_0_h / 2 * sin(target_angles[0])),
+  element_height[0]+element_height[1]+element_height[2] + int(hurtbox_0_h / 2 * sin(target_angles[0]))};
+  int hurtbox_1_coords[] = {
+  element_length[0]+element_length[1]+element_length[2], 
+  element_length[0]+element_length[1]+element_length[2] + int(hurtbox_1_w * cos(target_angles[1])),
+  element_height[0]+element_height[1]+element_height[2] - 10,
+  element_height[0]+element_height[1]+element_height[2] + int(hurtbox_1_h * sin(target_angles[1]))};
+
+//тут отсортировать значения для соответствия min->max
+
+//тут проверка что они не в зоне хитбокса
+
+  /*тут прописать как переменные все прямоугольники хитбоксов и хартбоксов(hurtbox)
+  от одной крайней точки до другой
+  для перемещающихся звеньев постоянно вертикальный прямоугольник
+  функция считает положения всех боксов и проверяет коллизии hitbox_ов с hurtbox_ами
+
+  этой функцией заменить кучу проверок коллизий в get_angles и get_coords
+  предполагаем что обратная кинематика верная и ее не надо проверять тк мы ранее проверили target_coords
+  и оставить ее одну перед записью новых target_pos
+  
+  хитбоксы могут пересекаться между собой, хартбоксы тоже, пересечение хитбокса и хартбокса - вернуть false
+  иначе - true
+  */
+  return true;
 }
 
 void move_up(){
