@@ -5,7 +5,6 @@
 #include <Servo.h>
 #include <math.h>
 
-
 #define ARM_PIN 11
 const byte enc_adress[] = {5, 6, 7};
 
