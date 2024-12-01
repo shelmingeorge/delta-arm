@@ -355,15 +355,55 @@ void get_coords(){
   target_height = height;
   }
 
-//мб объединить в одну и не выебываться
-void get_target_pos_0(){
-  if ((target_fi <= 30) or (target_fi >= 330)){
-    return;
+/*
+  void get_target_pos_0(){
+    if ((target_fi <= 30) or (target_fi >= 330)){
+      return;
+      }
+    target_pos[0] = int(target_fi / 1.8 * reduction[0]);
     }
-  target_pos[0] = int(target_fi / 1.8 * reduction[0]);
-  }
 
-void get_target_pos_1_2(){
+  void get_target_pos_1_2(){
+    double q2 = 0.0;
+    double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
+    cos_q3 += square(target_height - element_height[0] - element_height[1]);
+    cos_q3 -= square(element_length[2]) + square(element_length[3]);
+    cos_q3 /= 2 * element_length[2] * element_length[3];
+
+    if (abs(cos_q3) > 1){
+      return;
+      }
+
+    q2 = -1 * acos(cos_q3) * 180 / M_PI;
+    
+    //если заходит в обратное направление наклона - считать угол в другую сторону
+    if (target_dist <= element_length[0] + element_length[1]){
+      q2 *= -1;
+      }
+    
+    
+    double q1 = 0.0;
+    double tg_2 = element_length[3] * sin(q2);
+    double tg_1 = target_height - element_height[0] - element_height[1];
+    tg_1 /= target_dist - element_length[0] - element_length[1];
+    tg_2 /= element_length[3] * cos(q2) + element_length[2];
+
+    q1 = atan(tg_1) - atan(tg_2);
+    q1 *= -1 * 180 / M_PI;
+  
+    if (!check_boxes(
+      target_pos[0],
+      int(q1 / 1.8 * reduction[1]),
+      int(q2 / 1.8 * reduction[2]))){
+      return;
+      }
+
+    target_pos[1] = int(q1 / 1.8 * reduction[1]);
+    target_pos[2] = int(q2 / 1.8 * reduction[2]);
+
+    }*/
+
+void get_target_positions(){
   double q2 = 0.0;
   double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
   cos_q3 += square(target_height - element_height[0] - element_height[1]);
@@ -401,12 +441,13 @@ void get_target_pos_1_2(){
     }
   */
   if (!check_boxes(
-    target_pos[0],
+    int(target_fi / 1.8 * reduction[0]),
     int(q1 / 1.8 * reduction[1]),
     int(q2 / 1.8 * reduction[2]))){
     return;
     }
 
+  target_pos[0] = int(target_fi / 1.8 * reduction[0]);
   target_pos[1] = int(q1 / 1.8 * reduction[1]);
   target_pos[2] = int(q2 / 1.8 * reduction[2]);
 
@@ -420,8 +461,9 @@ void read_input(){
   switch (input){
     case endl:
       get_coords();
-      get_target_pos_0();
-      get_target_pos_1_2();
+      get_target_positions();
+      //get_target_pos_0();
+      //get_target_pos_1_2();
       break;
 
     case angles:
@@ -492,7 +534,6 @@ void stepper_print(AccelStepper Stepper, float angle, float reduct){
   }
 
 //продумать для нескольких двигателей
-//можно находить какому двигателю надо ехать дальше/ближе и выбирать его для отсчета
 void speed_regulation(int target_position, float current_angle, float reduct){
   int step_delay = 20;
 
