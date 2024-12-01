@@ -649,5 +649,6 @@ void loop() {
   //print_target_coords();
   //print_target_positions();
 
-  speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
+  //speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
+  delay(30);
   }
