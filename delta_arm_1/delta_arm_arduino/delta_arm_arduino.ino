@@ -5,6 +5,7 @@
 #include <Servo.h>
 #include <math.h>
 
+
 #define ARM_PIN 11
 const byte enc_adress[] = {5, 6, 7};
 
@@ -55,47 +56,47 @@ void TCA9548A(uint8_t bus){
   Wire.beginTransmission(0x70);  // TCA9548A address is 0x70
   Wire.write(1 << bus);          // send byte to select bus
   Wire.endTransmission();
-}
+  }
 
 void arm_setup(Servo my_servo){
   my_servo.attach(ARM_PIN);
   my_servo.write(90);
-}
+  }
 
 void arm_lock(Servo my_servo){
   int position = my_servo.read();
   if (position <= 40){
     return;
-  }
+    }
   my_servo.write(40);
-}
+  }
 
 void arm_unlock(Servo my_servo){
   int position = my_servo.read();
   if (position >= 150){
     return;
-  }
+    }
   my_servo.write(150);
-}
+  }
 
 void arm_off(Servo my_servo){
   arm_lock(my_servo);
   my_servo.detach();
-}
+  }
 
 void arm_grab_release(Servo my_servo){
   if (is_grabbed){
     Serial.println("releasing");
     arm_unlock(my_servo);
     is_grabbed = 0;
-  }
+    }
   else {
     Serial.println("grabbing");
     arm_lock(my_servo);
     is_grabbed = 1;
-  }
+    }
   delay(1000);//чтобы успеть прочесть текст
-}
+  }
 
 void waiting(){
   i = 0;
@@ -103,23 +104,23 @@ void waiting(){
   Serial.println("PRESS <C> TO CONTINUE");
   while(Serial.read() != play){
     delay(100);
-  }
+    }
   Serial.println("THE PROGRAM WILL CONTINUE IN 1 SECOND");
   delay(1000);
-}
+  }
 
 void set_default_pos(){
   target_pos[0] = default_positions[0];
   target_pos[1] = default_positions[1];
   target_pos[2] = default_positions[2];
-}
+  }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   
   double angle_0 = float(target_pos_0) * 1.8 / reduction[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
-  }
+    }
 
   const int hitbox_coords[] = {-35, 125, 0, 75}; //{dist_min, dist_max, height_min, height_max}
   const int hurtbox_0_w = 45;
@@ -131,7 +132,7 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   float(target_pos_1 * 1.8 / reduction[1]), 
   float(target_pos_2 * 1.8 / reduction[2])};
 
-//ПРОВЕРИТЬ ЗНАКИ И НАПРАВЛЕНИЯ ОТСЧЕТА УГЛОВ
+  //ПРОВЕРИТЬ ЗНАКИ И НАПРАВЛЕНИЯ ОТСЧЕТА УГЛОВ
   int hurtbox_0_coords[] = {
   element_length[0]+element_length[1]+element_length[2]*cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
   element_length[0]+element_length[1]+element_length[2]*cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
@@ -147,65 +148,71 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
     int swap = hurtbox_1_coords[1];
     hurtbox_1_coords[1] = hurtbox_1_coords[0];
     hurtbox_1_coords[0] = swap;
-  }
+    }
   if (hurtbox_1_coords[3] < hurtbox_1_coords[2]){
     int swap = hurtbox_1_coords[3];
     hurtbox_1_coords[3] = hurtbox_1_coords[2];
     hurtbox_1_coords[2] = swap;
-  }
+    }
 
   if (hurtbox_0_coords[2] < 0){
     return false;
-  }
+    }
   if (hurtbox_1_coords[2] < 0){
     return false;
-  }
+    }
+  if (hurtbox_0_coords[1] > element_length[0]+element_length[1]+element_length[2]+element_length[3]){
+    return false;
+    }
+  if (hurtbox_1_coords[1] > element_length[0]+element_length[1]+element_length[2]+element_length[3]){
+    return false;
+    }
   if ((hurtbox_0_coords[2] < hitbox_coords[3]) and (hurtbox_0_coords[0] < hitbox_coords[1])){
     return false;
-  }
+    }
   if ((hurtbox_1_coords[2] < hitbox_coords[3]) and (hurtbox_1_coords[0] < hitbox_coords[1])){
     return false;
-  }
+    }
   if ((hurtbox_0_coords[1] < hitbox_coords[0]) and (hurtbox_0_coords[3] < hitbox_coords[2])){
     return false;
-  }
+    }
   if ((hurtbox_1_coords[1] < hitbox_coords[0]) and (hurtbox_1_coords[3] < hitbox_coords[2])){
     return false;
-  }
+    }
 
   /*
-  этой функцией заменить кучу проверок коллизий в get_angles и get_coords
-  предполагаем что обратная кинематика верная и ее не надо проверять тк мы ранее проверили target_coords
-  и оставить ее одну перед записью новых target_pos
+    этой функцией заменить кучу проверок коллизий в get_angles и get_coords
+    предполагаем что обратная кинематика верная и ее не надо проверять тк мы ранее проверили target_coords
+    и оставить ее одну перед записью новых target_pos
   */
   return true;
-}
+  }
 
 void move_up(){
   target_pos[1] -= int(move_steps_per_command * reduction[1]);
   target_pos[2] += int(move_steps_per_command * reduction[2]);
-}
+  }
 
 void move_down(){
   target_pos[1] += int(move_steps_per_command * reduction[1]);
   target_pos[2] -= int(move_steps_per_command * reduction[2]);
-}
+  }
 
 void move_left(){
   target_pos[0] += int(move_steps_per_command * reduction[0]);
-}
+  }
 
 void move_right(){
   target_pos[0] -= int(move_steps_per_command * reduction[0]);
-}
+  }
 
 void move_forward(){
   return;
-}
+  }
 
 void move_backward(){
   return;
-}
+  }
 
 void add_char(char input_char){
       switch (input_char)
@@ -259,24 +266,24 @@ void add_char(char input_char){
       default:
         string[i] = input_char;
     }
-}
+  }
 
 void check_input(){
   if (Serial.available() <= 0){
     return;
-  }
+    }
   input = Serial.read();
   add_char(input);
 
   if ((i < 8) and ((input != endl) or (input != angles))){
     i++;
+    }
   }
-}
 
 void get_angles(){
   if (i!=8){
     return;
-  }
+    }
   String string_q0 = string;
   String string_q1 = string;
   String string_q2 = string;
@@ -289,27 +296,23 @@ void get_angles(){
   int angle_1 = -1 * string_q1.toInt();
   int angle_2 = string_q2.toInt();
 
-/*
-  if ((angle_0 <= 30) or (angle_0 >= 330)){
+  if (!check_boxes(
+    int(double(angle_0) / 1.8 * reduction[0]),
+    int(double(angle_1) / 1.8 * reduction[1]),
+    int(double(angle_2) / 1.8 * reduction[2]))){
     return;
-  }
-  if ((angle_1 >= 120) or (angle_1 <= -20)){
-    return;
-  }
-  if ((angle_2 >= 120) or (angle_2 <= -120)){
-    return;
-  }
-*/
+    }
+
   target_pos[0] = int(double(angle_0) / 1.8 * reduction[0]);
   target_pos[1] = int(double(angle_1) / 1.8 * reduction[1]);
   target_pos[2] = int(double(angle_2) / 1.8 * reduction[2]);
 
-}
+  }
 
 void get_coords(){
   if (i!=8){
     return;
-  }
+    }
 
   String string_fi = string;
   String string_height = string;
@@ -323,37 +326,42 @@ void get_coords(){
   int dist = string_dist.toInt();
   int height = string_height.toInt();
 
-  if ((fi <= 30) or (fi >= 330)){
-    return;
-  }
-  if ((dist <= -70) or 
-  (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
-    return;
-  }
-  if ((height < 20) or 
-  (height > (element_height[0] + element_height[1] + element_length[2] + element_length[3]))){
-    return;
-  }
-  //теорема пифагора
-  if ((square(dist - element_length[0] - element_length[1]) + 
-  square(height - element_height[0] - element_height[1])) > 
-  square(element_length[2] + element_length[3])){
-    return;
-  }
-  
-  //отрезает всю зону 1 и 2 звена
-  if ((dist < 100) and (height < 75)){
-    return;
-  }
-
+  /*
+    if ((fi <= 30) or (fi >= 330)){
+      return;
+    }
+    if ((dist <= -70) or 
+    (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
+      return;
+    }
+    if ((height < 20) or 
+    (height > (element_height[0] + element_height[1] + element_length[2] + element_length[3]))){
+      return;
+    }
+    //теорема пифагора
+    if ((square(dist - element_length[0] - element_length[1]) + 
+    square(height - element_height[0] - element_height[1])) > 
+    square(element_length[2] + element_length[3])){
+      return;
+    }
+    
+    //отрезает всю зону 1 и 2 звена
+    if ((dist < 100) and (height < 75)){
+      return;
+    }
+  */
   target_fi = fi;
   target_dist = dist;
   target_height = height;
-}
+  }
 
+//мб объединить в одну и не выебываться
 void get_target_pos_0(){
+  if ((target_fi <= 30) or (target_fi >= 330)){
+    return;
+    }
   target_pos[0] = int(target_fi / 1.8 * reduction[0]);
-}
+  }
 
 void get_target_pos_1_2(){
   double q2 = 0.0;
@@ -364,18 +372,20 @@ void get_target_pos_1_2(){
 
   if (abs(cos_q3) > 1){
     return;
-  }
+    }
 
   q2 = -1 * acos(cos_q3) * 180 / M_PI;
   
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= element_length[0] + element_length[1]){
     q2 *= -1;
-  }
+    }
   
-  if ((q2 >= 120) or (q2 <= -120)){
-    return;
-  }
+  /*
+    if ((q2 >= 120) or (q2 <= -120)){
+      return;
+    }
+  */
 
   double q1 = 0.0;
   double tg_2 = element_length[3] * sin(q2);
@@ -385,25 +395,33 @@ void get_target_pos_1_2(){
 
   q1 = atan(tg_1) - atan(tg_2);
   q1 *= -1 * 180 / M_PI;
-  if ((q1 >= 20) or (q1 <= -120)){
+  /*
+    if ((q1 >= 20) or (q1 <= -120)){
+      return;
+    }
+  */
+  if (!check_boxes(
+    target_pos[0],
+    int(q1 / 1.8 * reduction[1]),
+    int(q2 / 1.8 * reduction[2]))){
     return;
-  }
+    }
+
   target_pos[1] = int(q1 / 1.8 * reduction[1]);
   target_pos[2] = int(q2 / 1.8 * reduction[2]);
 
-}
+  }
 
-//отключена обратная кинематика
 void read_input(){
   if (string == default_string){
     return;
-  }
+    }
 
   switch (input){
     case endl:
       get_coords();
       get_target_pos_0();
-      //get_target_pos_1_2();
+      get_target_pos_1_2();
       break;
 
     case angles:
@@ -412,11 +430,11 @@ void read_input(){
 
     default:
       return;
-  }
+    }
 
   string = default_string;
   i = 0;
-}
+  }
 
 void print_target_coords(){
   Serial.print("\n");
@@ -427,7 +445,7 @@ void print_target_coords(){
   Serial.print(target_dist);
   Serial.print("\t");
   Serial.println(target_height);
-}
+  }
 
 void print_target_positions(){
   Serial.print("\n");
@@ -438,31 +456,31 @@ void print_target_positions(){
   Serial.print(target_pos[1]);
   Serial.print("\t");
   Serial.println(target_pos[2]);
-}
+  }
 
 void encoder_setup(AS5600 enc){
   enc.begin();
   Serial.print("Connect: ");
   Serial.println(enc.isConnected());
   delay(100);
-}
+  }
 
 float angle(AS5600 enc, float angle_dislocation){
   if (!enc.isConnected()){
     return 400;
-  }
+    }
   return (float(enc.rawAngle()) / 4096 * 360) - angle_dislocation;
-}
+  }
 
 int current_position(float current_angle, float reduct){
   return int((current_angle) / 1.8 * reduct);
-}
+  }
 
 void stepper_setup(AccelStepper Stepper, float current_angle, float reduct){
   Stepper.setMaxSpeed(int (50 * reduct));
   Stepper.setAcceleration(int(50 * reduct));
   Stepper.setCurrentPosition(current_position(current_angle, reduct));
-}
+  }
 
 void stepper_print(AccelStepper Stepper, float angle, float reduct){
   Serial.print(angle);
@@ -471,7 +489,7 @@ void stepper_print(AccelStepper Stepper, float angle, float reduct){
   //Serial.print("\t");
   //Serial.print(Stepper.currentPosition());
   Serial.print("\t");
-}
+  }
 
 //продумать для нескольких двигателей
 //можно находить какому двигателю надо ехать дальше/ближе и выбирать его для отсчета
@@ -483,12 +501,12 @@ void speed_regulation(int target_position, float current_angle, float reduct){
   step_delay = int(div * k_p) + 5;
 
   delay(step_delay);
-}
+  }
 
 void fix_position(int target_position, float current_angle, AccelStepper Stepper, bool direction, float reduct){
   if (current_angle > 359){
     return;
-  }
+    }
  
   int step = 1;
   int pos = current_position(current_angle, reduct);
@@ -496,55 +514,55 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
   if (abs(pos - target_position) <= delta){
     Stepper.setCurrentPosition(target_position);
     return;
-  }
+    }
   if (direction){
     step *= (-1);
-  }
+    }
   
   if (pos - target_position > delta){
     Stepper.move(-step);
-  }
+    }
   if (pos - target_position < -delta){
     Stepper.move(step);
-  }
+    }
 
   Stepper.run();
-}
+  }
 
 void servo_setup(int index){
   if ((index < 0) or (index > 2)){
     return;
-  }
+    }
 
   TCA9548A(enc_adress[index]);
   encoder_setup(element_encoders[index]);
   stepper_setup(element_steppers[index], angle(element_encoders[index], angle_dislocation[index]), reduction[index]);
-}
+  }
 
 float servo_angle(int index){
   if ((index < 0) or (index > 2)){
     return;
-  }
+    }
 
   TCA9548A(enc_adress[index]);
   return angle(element_encoders[index], angle_dislocation[index]);
-}
+  }
 
 void fix_servo_position(int index){
   if ((index < 0) or (index > 2)){
     return;
-  }
+    }
 
   fix_position(target_pos[index], enc_angle[index], element_steppers[index], clockwise_direction[index], reduction[index]);
-}
+  }
 
 void print_servo_position(int index){
   if ((index < 0) or (index > 2)){
     return;
-  }
+    }
 
   stepper_print(element_steppers[index], enc_angle[index], reduction[index]);
-}
+  }
 
 void print_all_info(){
   print_servo_position(0);
@@ -553,9 +571,10 @@ void print_all_info(){
   //print_target_coords();
   print_target_positions();
 
-}
+  }
 
 
+//main
 void setup() {
   Serial.begin(115200);
   Wire.begin();
@@ -567,7 +586,7 @@ void setup() {
   servo_setup(2);
 
   delay(2000);
-}
+  }
 
 
 void loop() {
@@ -590,4 +609,4 @@ void loop() {
   //print_target_positions();
 
   speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
-}
+  }
