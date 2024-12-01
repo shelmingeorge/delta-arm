@@ -189,28 +189,60 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   }
 
 void move_up(){
+  if (!check_boxes(
+    180,
+    target_pos[1] - int(move_steps_per_command * reduction[1]),
+    target_pos[2] + int(move_steps_per_command * reduction[2]))){
+      return;
+    }
+
   target_pos[1] -= int(move_steps_per_command * reduction[1]);
   target_pos[2] += int(move_steps_per_command * reduction[2]);
   }
 
 void move_down(){
+  if (!check_boxes(
+    180,
+    target_pos[1] + int(move_steps_per_command * reduction[1]),
+    target_pos[2] - int(move_steps_per_command * reduction[2]))){
+      return;
+    }
+   
   target_pos[1] += int(move_steps_per_command * reduction[1]);
   target_pos[2] -= int(move_steps_per_command * reduction[2]);
   }
 
 void move_left(){
-  target_pos[0] += int(move_steps_per_command * reduction[0]);
+  int dpos = int(move_steps_per_command * reduction[0]);
+  
+  if ((target_pos[0] + dpos <= 30) or (target_pos[0] + dpos >= 330)){
+      return;
+    }
+  
+  target_pos[0] += dpos;
   }
 
 void move_right(){
-  target_pos[0] -= int(move_steps_per_command * reduction[0]);
+  int dpos = int(move_steps_per_command * reduction[0]);
+  
+  if ((target_pos[0] - dpos <= 30) or (target_pos[0] - dpos >= 330)){
+      return;
+    }
+  
+  target_pos[0] -= dpos;
   }
 
 void move_forward(){
+  //определение знака углов 1 и 2 чтобы понять в какую сторону двигать звенья
+  //если угол 0 то не двигаться
+  //если углы разные то сдвинуть 1 звено на 2 шага
   return;
   }
 
 void move_backward(){
+  //определение знака углов 1 и 2 чтобы понять в какую сторону двигать звенья
+  //если угол 0 то не двигаться
+  //если углы разные то сдвинуть 1 звено на 2 шага
   return;
   }
 
