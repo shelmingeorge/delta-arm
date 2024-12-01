@@ -686,3 +686,5 @@ void loop() {
   //speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
   delay(30);
   }
+//
+//hiiii
