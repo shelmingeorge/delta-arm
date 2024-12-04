@@ -5,7 +5,6 @@
 #include <Servo.h>
 #include <math.h>
 
-
 #define ARM_PIN 11
 const byte enc_adress[] = {5, 6, 7};
 
@@ -16,7 +15,7 @@ const int element_height[] = {70, -29, 0, 0};
 const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const bool clockwise_direction[] = {1, 1, 0};
-
+//0 - по часовой, 1 - вниз, 2 - вверх
 const char default_string[] = "---------";
 String string = default_string;
 
@@ -24,7 +23,6 @@ enum Control_chars : char {endl = 'e', angles = 'a',
 pause = 'p', play = 'c', grab = 'g', default_pos = ' ', 
 up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b', 
 write_pos = 'w'};
-
 
 const byte delta = 1;
 const int move_steps_per_command = 1;
@@ -41,7 +39,6 @@ byte i = 0;
 float enc_angle[] = {0.0, 0.0, 0.0};
 const int default_positions[] = {100, 0, 0};
 int target_pos[] = {default_positions[0], default_positions[1], default_positions[2]}; //цилиндрические координаты
-
 
 AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
@@ -129,15 +126,14 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   const int hurtbox_1_h = 50;
 
   float target_angles[] = {
-  float(target_pos_1 * 1.8 / reduction[1]), 
+  (-1) * float(target_pos_1 * 1.8 / reduction[1]), //-1 из-за учета направления вращения
   float(target_pos_2 * 1.8 / reduction[2])};
 
-  //ПРОВЕРИТЬ ЗНАКИ И НАПРАВЛЕНИЯ ОТСЧЕТА УГЛОВ
   int hurtbox_0_coords[] = {
-  element_length[0]+element_length[1]+element_length[2]*cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
-  element_length[0]+element_length[1]+element_length[2]*cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
-  element_height[0]+element_height[1]+element_height[2]*sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
-  element_height[0]+element_height[1]+element_height[2]*sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
+  element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
+  element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
+  element_height[0]+element_height[1]+element_height[2] * sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
+  element_height[0]+element_height[1]+element_height[2] * sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
   int hurtbox_1_coords[] = {
   element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]), 
   element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]) + int(hurtbox_1_w * cos(target_angles[1])),
@@ -180,11 +176,6 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
     return false;
     }
 
-  /*
-    этой функцией заменить кучу проверок коллизий в get_angles и get_coords
-    предполагаем что обратная кинематика верная и ее не надо проверять тк мы ранее проверили target_coords
-    и оставить ее одну перед записью новых target_pos
-  */
   return true;
   }
 
@@ -383,7 +374,7 @@ void get_coords(){
     if ((dist < 100) and (height < 75)){
       return;
     }
-  */
+    */
   target_fi = fi;
   target_dist = dist;
   target_height = height;
