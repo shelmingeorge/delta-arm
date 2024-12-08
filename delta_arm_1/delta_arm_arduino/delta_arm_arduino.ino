@@ -25,7 +25,7 @@ up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b',
 write_pos = 'w'};
 
 const byte delta = 1;
-const int move_steps_per_command = 1;
+const int move_steps_per_command = 2; //сделать переменной и изменять с помощью ф-ии?
 
 bool is_grabbed = 1;
 char input = '0';
@@ -180,6 +180,7 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   }
 
 void move_up(){
+  //через функции обратной кинематики прописать 4 функции движения
   if (!check_boxes(
     180,
     target_pos[1] - int(move_steps_per_command * reduction[1]),
@@ -192,6 +193,7 @@ void move_up(){
   }
 
 void move_down(){
+  //через функции обратной кинематики прописать 4 функции движения
   if (!check_boxes(
     180,
     target_pos[1] + int(move_steps_per_command * reduction[1]),
@@ -224,23 +226,13 @@ void move_right(){
   }
 
 void move_forward(){
-  if ((abs(enc_angle[1]) <= 2.0) or (abs(enc_angle[2]) <= 1.0)){
-    return;
-    }
-  //УЧЕСТЬ ЧТО ЗВЕНЬЯ РАЗНОГО РАЗМЕРА
-  //определение знака углов 1 и 2 чтобы понять в какую сторону двигать звенья
-  //если углы разные то сдвинуть 1 звено на 2 шага
+  //через функции обратной кинематики прописать 4 функции движения
   //check_boxes()
   return;
   }
 
 void move_backward(){
-  if ((abs(enc_angle[1]) <= 2.0) or (abs(enc_angle[2]) <= 1.0)){
-    return;
-    }
-  //УЧЕСТЬ ЧТО ЗВЕНЬЯ РАЗНОГО РАЗМЕРА  
-  //определение знака углов 1 и 2 чтобы понять в какую сторону двигать звенья
-  //если углы разные то сдвинуть 1 звено на 2 шага
+  //через функции обратной кинематики прописать 4 функции движения
   //check_boxes()
   return;
   }
