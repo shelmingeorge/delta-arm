@@ -233,6 +233,7 @@ void move_forward(){
   //через функции обратной кинематики прописать 4 функции движения
   //target dist += ...;
   //get target positions();
+  //если target_pos не поменялись то откатывать target dist чтобы не было больше нигде проблем
   return;
   }
 
