@@ -8,14 +8,14 @@
 #define ARM_PIN 11
 const byte enc_adress[] = {5, 6, 7};
 
-//mm //заменить на новые размеры
-const int element_length[] = {0, 70, 70, 114}; //from the model
-const int element_height[] = {70, -29, 0, 0};
+//mm //updated
+const int element_length[] = {0, 92, 70, 118}; //from the model
+const int element_height[] = {73, -30, 0, 0};
 
 const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float reduction[] = {1.0, 4.0, 1.0};
 const bool clockwise_direction[] = {1, 1, 0};
-//0 - по часовой, 1 - вниз, 2 - вверх
+//0 - clockwize, 1 - down, 2 - up
 const char default_string[] = "---------";
 String string = default_string;
 
@@ -181,6 +181,8 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
 
 void move_up(){
   //через функции обратной кинематики прописать 4 функции движения
+  //target dist += ...;
+  //get target positions();
   if (!check_boxes(
     180,
     target_pos[1] - int(move_steps_per_command * reduction[1]),
@@ -194,6 +196,8 @@ void move_up(){
 
 void move_down(){
   //через функции обратной кинематики прописать 4 функции движения
+  //target dist += ...;
+  //get target positions();
   if (!check_boxes(
     180,
     target_pos[1] + int(move_steps_per_command * reduction[1]),
@@ -227,13 +231,15 @@ void move_right(){
 
 void move_forward(){
   //через функции обратной кинематики прописать 4 функции движения
-  //check_boxes()
+  //target dist += ...;
+  //get target positions();
   return;
   }
 
 void move_backward(){
   //через функции обратной кинематики прописать 4 функции движения
-  //check_boxes()
+  //target dist += ...;
+  //get target positions();
   return;
   }
 
