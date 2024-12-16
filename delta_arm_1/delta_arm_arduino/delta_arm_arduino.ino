@@ -14,7 +14,7 @@ const int ELEMENT_HEIGHT[] = {73, -30, 0, 0};
 
 const float ANGLE_DISLOCATION[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float REDUCTION[] = {1.0, 4.0, 1.0};
-const bool CLOCKWISE_DIRECTION[] = {1, 1, 0};
+const bool SPIN_DIRECTION[] = {1, 1, 0};
 //0 - counterclockwize, 1 - down, 2 - up
 const char DEFAULT_STRING[] = "---------";
 String string = DEFAULT_STRING;
@@ -603,7 +603,7 @@ void fix_servo_position(int index){
     return;
     }
 
-  fix_position(target_pos[index], enc_angle[index], element_steppers[index], CLOCKWISE_DIRECTION[index], REDUCTION[index]);
+  fix_position(target_pos[index], enc_angle[index], element_steppers[index], SPIN_DIRECTION[index], REDUCTION[index]);
   }
 
 void print_servo_position(int index){
