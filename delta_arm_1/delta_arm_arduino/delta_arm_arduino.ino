@@ -15,7 +15,7 @@ const int ELEMENT_HEIGHT[] = {73, -30, 0, 0};
 const float ANGLE_DISLOCATION[] = {-13.94, 1.42 + 180, -5.27 + 180};
 const float REDUCTION[] = {1.0, 4.0, 1.0};
 const bool CLOCKWISE_DIRECTION[] = {1, 1, 0};
-//0 - clockwize, 1 - down, 2 - up
+//0 - counterclockwize, 1 - down, 2 - up
 const char DEFAULT_STRING[] = "---------";
 String string = DEFAULT_STRING;
 
@@ -230,38 +230,45 @@ void move_down(){
   }
 
 void move_left(){
-  int dpos = int(MOVE_STEPS_PER_COMMAND * REDUCTION[0]);
-  
-  if ((target_pos[0] + dpos <= 30) or (target_pos[0] + dpos >= 330)){
+  if (target_fi + MOVE_DEGREES_PER_COMMAND >= 330){
       return;
     }
-  
-  target_pos[0] += dpos;
+  target_fi += MOVE_DEGREES_PER_COMMAND;
+  target_pos[0] += MOVE_STEPS_PER_COMMAND;
   }
 
 void move_right(){
-  int dpos = int(MOVE_STEPS_PER_COMMAND * REDUCTION[0]);
-  
-  if ((target_pos[0] - dpos <= 30) or (target_pos[0] - dpos >= 330)){
+  if (target_fi - MOVE_DEGREES_PER_COMMAND <= 30){
       return;
     }
-  
-  target_pos[0] -= dpos;
+  target_fi -= MOVE_DEGREES_PER_COMMAND;
+  target_pos[0] -= MOVE_STEPS_PER_COMMAND;
   }
 
 void move_forward(){
-  //через функции обратной кинематики прописать 4 функции движения
-  //target dist += ...;
-  //get target positions();
-  //если target_pos не поменялись то откатывать target dist чтобы не было больше нигде проблем
-  return;
+  int old_dist = target_dist;
+  int old_pos[] = {target_pos[1], target_pos[2]};
+
+  target_dist += MOVE_MM_PER_COMMAND;
+  get_target_positions();
+
+  if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
+    target_dist = old_dist;
+  }
+
   }
 
 void move_backward(){
-  //через функции обратной кинематики прописать 4 функции движения
-  //target dist += ...;
-  //get target positions();
-  return;
+  int old_dist = target_dist;
+  int old_pos[] = {target_pos[1], target_pos[2]};
+
+  target_dist -= MOVE_MM_PER_COMMAND;
+  get_target_positions();
+
+  if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
+    target_dist = old_dist;
+  }
+
   }
 
 void add_char(char input_char){
