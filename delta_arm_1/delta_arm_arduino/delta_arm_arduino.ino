@@ -25,8 +25,9 @@ up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b',
 write_pos = 'w'};
 
 const byte DELTA = 1;
-const int MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
-const int MOVE_MM_PER_COMMAND = 5;
+const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
+const byte MOVE_MM_PER_COMMAND = 5;
+const float MOVE_DERGEES_PER_COMMAND = 3.6;
 
 char input = '0';
 
@@ -83,7 +84,7 @@ void arm_off(Servo my_servo){
 
 void arm_grab_release(Servo my_servo){
   bool is_grabbed = 1;
-  
+
   if (is_grabbed){
     Serial.println("releasing");
     arm_unlock(my_servo);
@@ -182,33 +183,50 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   }
 
 void move_up(){
-  //через функции обратной кинематики прописать 4 функции движения
-  //target dist += ...;
-  //get target positions();
-  if (!check_boxes(
-    180,
-    target_pos[1] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
-    target_pos[2] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
-      return;
-    }
+  int old_height = target_height;
+  int old_pos[] = {target_pos[1], target_pos[2]};
 
-  target_pos[1] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
-  target_pos[2] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
+  target_height += MOVE_MM_PER_COMMAND;
+  get_target_positions();
+
+  if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
+    target_height = old_height;
+  }
+
+  /*
+    if (!check_boxes(
+      180,
+      target_pos[1] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
+      target_pos[2] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
+        return;
+      }
+
+    target_pos[1] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
+    target_pos[2] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
+  */
   }
 
 void move_down(){
-  //через функции обратной кинематики прописать 4 функции движения
-  //target dist += ...;
-  //get target positions();
-  if (!check_boxes(
-    180,
-    target_pos[1] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
-    target_pos[2] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
-      return;
-    }
-   
-  target_pos[1] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
-  target_pos[2] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
+  int old_height = target_height;
+  int old_pos[] = {target_pos[1], target_pos[2]};
+
+  target_height -= MOVE_MM_PER_COMMAND;
+  get_target_positions();
+
+  if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
+    target_height = old_height;
+  }
+  /*
+    if (!check_boxes(
+      180,
+      target_pos[1] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
+      target_pos[2] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
+        return;
+      }
+    
+    target_pos[1] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
+    target_pos[2] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
+  */
   }
 
 void move_left(){
