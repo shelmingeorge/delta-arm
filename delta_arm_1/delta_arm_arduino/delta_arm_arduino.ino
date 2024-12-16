@@ -6,28 +6,28 @@
 #include <math.h>
 
 #define ARM_PIN 11
-const byte enc_adress[] = {5, 6, 7};
+const byte ENC_ADRESS[] = {5, 6, 7};
 
 //mm //updated
-const int element_length[] = {0, 92, 70, 118}; //from the model
-const int element_height[] = {73, -30, 0, 0};
+const int ELEMENT_LENGTH[] = {0, 92, 70, 118}; //from the model
+const int ELEMENT_HEIGHT[] = {73, -30, 0, 0};
 
-const float angle_dislocation[] = {-13.94, 1.42 + 180, -5.27 + 180};
-const float reduction[] = {1.0, 4.0, 1.0};
-const bool clockwise_direction[] = {1, 1, 0};
+const float ANGLE_DISLOCATION[] = {-13.94, 1.42 + 180, -5.27 + 180};
+const float REDUCTION[] = {1.0, 4.0, 1.0};
+const bool CLOCKWISE_DIRECTION[] = {1, 1, 0};
 //0 - clockwize, 1 - down, 2 - up
-const char default_string[] = "---------";
-String string = default_string;
+const char DEFAULT_STRING[] = "---------";
+String string = DEFAULT_STRING;
 
 enum Control_chars : char {endl = 'e', angles = 'a',
 pause = 'p', play = 'c', grab = 'g', default_pos = ' ', 
 up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b', 
 write_pos = 'w'};
 
-const byte delta = 1;
-const int move_steps_per_command = 2; //сделать переменной и изменять с помощью ф-ии?
+const byte DELTA = 1;
+const int MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
+const int MOVE_MM_PER_COMMAND = 5;
 
-bool is_grabbed = 1;
 char input = '0';
 
 int target_fi = 0;
@@ -37,8 +37,8 @@ int target_height = 0;
 byte i = 0;
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-const int default_positions[] = {100, 0, 0};
-int target_pos[] = {default_positions[0], default_positions[1], default_positions[2]}; //цилиндрические координаты
+const int DEFAULT_POSITIONS[] = {100, 0, 0};
+int target_pos[] = {DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[1], DEFAULT_POSITIONS[2]}; //цилиндрические координаты
 
 AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
@@ -82,6 +82,8 @@ void arm_off(Servo my_servo){
   }
 
 void arm_grab_release(Servo my_servo){
+  bool is_grabbed = 1;
+  
   if (is_grabbed){
     Serial.println("releasing");
     arm_unlock(my_servo);
@@ -97,7 +99,7 @@ void arm_grab_release(Servo my_servo){
 
 void waiting(){
   i = 0;
-  string = default_string;
+  string = DEFAULT_STRING;
   Serial.println("PRESS <C> TO CONTINUE");
   while(Serial.read() != play){
     delay(100);
@@ -107,14 +109,14 @@ void waiting(){
   }
 
 void set_default_pos(){
-  target_pos[0] = default_positions[0];
-  target_pos[1] = default_positions[1];
-  target_pos[2] = default_positions[2];
+  target_pos[0] = DEFAULT_POSITIONS[0];
+  target_pos[1] = DEFAULT_POSITIONS[1];
+  target_pos[2] = DEFAULT_POSITIONS[2];
   }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   
-  double angle_0 = float(target_pos_0) * 1.8 / reduction[1];
+  double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
     }
@@ -126,19 +128,19 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   const int hurtbox_1_h = 50;
 
   float target_angles[] = {
-  (-1) * float(target_pos_1 * 1.8 / reduction[1]), //-1 из-за учета направления вращения
-  float(target_pos_2 * 1.8 / reduction[2])};
+  (-1) * float(target_pos_1 * 1.8 / REDUCTION[1]), //-1 из-за учета направления вращения
+  float(target_pos_2 * 1.8 / REDUCTION[2])};
 
   int hurtbox_0_coords[] = {
-  element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
-  element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
-  element_height[0]+element_height[1]+element_height[2] * sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
-  element_height[0]+element_height[1]+element_height[2] * sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
+  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
+  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
+  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
+  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
   int hurtbox_1_coords[] = {
-  element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]), 
-  element_length[0]+element_length[1]+element_length[2] * cos(target_angles[0]) + int(hurtbox_1_w * cos(target_angles[1])),
-  element_height[0]+element_height[1]+element_height[2] * sin(target_angles[0]) - 10,
-  element_height[0]+element_height[1]+element_height[2] * sin(target_angles[0]) + int(hurtbox_1_h * sin(target_angles[1]))};
+  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]), 
+  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_1_w * cos(target_angles[1])),
+  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - 10,
+  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_1_h * sin(target_angles[1]))};
 
   if (hurtbox_1_coords[1] < hurtbox_1_coords[0]){
     int swap = hurtbox_1_coords[1];
@@ -157,10 +159,10 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   if (hurtbox_1_coords[2] < 0){
     return false;
     }
-  if (hurtbox_0_coords[1] > element_length[0]+element_length[1]+element_length[2]+element_length[3]){
+  if (hurtbox_0_coords[1] > ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3]){
     return false;
     }
-  if (hurtbox_1_coords[1] > element_length[0]+element_length[1]+element_length[2]+element_length[3]){
+  if (hurtbox_1_coords[1] > ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3]){
     return false;
     }
   if ((hurtbox_0_coords[2] < hitbox_coords[3]) and (hurtbox_0_coords[0] < hitbox_coords[1])){
@@ -185,13 +187,13 @@ void move_up(){
   //get target positions();
   if (!check_boxes(
     180,
-    target_pos[1] - int(move_steps_per_command * reduction[1]),
-    target_pos[2] + int(move_steps_per_command * reduction[2]))){
+    target_pos[1] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
+    target_pos[2] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
       return;
     }
 
-  target_pos[1] -= int(move_steps_per_command * reduction[1]);
-  target_pos[2] += int(move_steps_per_command * reduction[2]);
+  target_pos[1] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
+  target_pos[2] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
   }
 
 void move_down(){
@@ -200,17 +202,17 @@ void move_down(){
   //get target positions();
   if (!check_boxes(
     180,
-    target_pos[1] + int(move_steps_per_command * reduction[1]),
-    target_pos[2] - int(move_steps_per_command * reduction[2]))){
+    target_pos[1] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
+    target_pos[2] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
       return;
     }
    
-  target_pos[1] += int(move_steps_per_command * reduction[1]);
-  target_pos[2] -= int(move_steps_per_command * reduction[2]);
+  target_pos[1] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
+  target_pos[2] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
   }
 
 void move_left(){
-  int dpos = int(move_steps_per_command * reduction[0]);
+  int dpos = int(MOVE_STEPS_PER_COMMAND * REDUCTION[0]);
   
   if ((target_pos[0] + dpos <= 30) or (target_pos[0] + dpos >= 330)){
       return;
@@ -220,7 +222,7 @@ void move_left(){
   }
 
 void move_right(){
-  int dpos = int(move_steps_per_command * reduction[0]);
+  int dpos = int(MOVE_STEPS_PER_COMMAND * REDUCTION[0]);
   
   if ((target_pos[0] - dpos <= 30) or (target_pos[0] - dpos >= 330)){
       return;
@@ -327,16 +329,15 @@ void get_angles(){
   int angle_2 = string_q2.toInt();
 
   if (!check_boxes(
-    int(double(angle_0) / 1.8 * reduction[0]),
-    int(double(angle_1) / 1.8 * reduction[1]),
-    int(double(angle_2) / 1.8 * reduction[2]))){
+    int(double(angle_0) / 1.8 * REDUCTION[0]),
+    int(double(angle_1) / 1.8 * REDUCTION[1]),
+    int(double(angle_2) / 1.8 * REDUCTION[2]))){
     return;
     }
 
-  target_pos[0] = int(double(angle_0) / 1.8 * reduction[0]);
-  target_pos[1] = int(double(angle_1) / 1.8 * reduction[1]);
-  target_pos[2] = int(double(angle_2) / 1.8 * reduction[2]);
-
+  target_pos[0] = int(double(angle_0) / 1.8 * REDUCTION[0]);
+  target_pos[1] = int(double(angle_1) / 1.8 * REDUCTION[1]);
+  target_pos[2] = int(double(angle_2) / 1.8 * REDUCTION[2]);
   }
 
 void get_coords(){
@@ -361,17 +362,17 @@ void get_coords(){
       return;
     }
     if ((dist <= -70) or 
-    (dist > (element_length[0] + element_length[1] + element_length[2] + element_length[3]))){
+    (dist > (ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]))){
       return;
     }
     if ((height < 20) or 
-    (height > (element_height[0] + element_height[1] + element_length[2] + element_length[3]))){
+    (height > (ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]))){
       return;
     }
     //теорема пифагора
-    if ((square(dist - element_length[0] - element_length[1]) + 
-    square(height - element_height[0] - element_height[1])) > 
-    square(element_length[2] + element_length[3])){
+    if ((square(dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1]) + 
+    square(height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1])) > 
+    square(ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3])){
       return;
     }
     
@@ -385,60 +386,13 @@ void get_coords(){
   target_height = height;
   }
 
-/*
-  void get_target_pos_0(){
-    if ((target_fi <= 30) or (target_fi >= 330)){
-      return;
-      }
-    target_pos[0] = int(target_fi / 1.8 * reduction[0]);
-    }
-
-  void get_target_pos_1_2(){
-    double q2 = 0.0;
-    double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
-    cos_q3 += square(target_height - element_height[0] - element_height[1]);
-    cos_q3 -= square(element_length[2]) + square(element_length[3]);
-    cos_q3 /= 2 * element_length[2] * element_length[3];
-
-    if (abs(cos_q3) > 1){
-      return;
-      }
-
-    q2 = -1 * acos(cos_q3) * 180 / M_PI;
-    
-    //если заходит в обратное направление наклона - считать угол в другую сторону
-    if (target_dist <= element_length[0] + element_length[1]){
-      q2 *= -1;
-      }
-    
-    
-    double q1 = 0.0;
-    double tg_2 = element_length[3] * sin(q2);
-    double tg_1 = target_height - element_height[0] - element_height[1];
-    tg_1 /= target_dist - element_length[0] - element_length[1];
-    tg_2 /= element_length[3] * cos(q2) + element_length[2];
-
-    q1 = atan(tg_1) - atan(tg_2);
-    q1 *= -1 * 180 / M_PI;
-  
-    if (!check_boxes(
-      target_pos[0],
-      int(q1 / 1.8 * reduction[1]),
-      int(q2 / 1.8 * reduction[2]))){
-      return;
-      }
-
-    target_pos[1] = int(q1 / 1.8 * reduction[1]);
-    target_pos[2] = int(q2 / 1.8 * reduction[2]);
-
-    }*/
 
 void get_target_positions(){
   double q2 = 0.0;
-  double cos_q3 = square(target_dist - element_length[0] - element_length[1]);
-  cos_q3 += square(target_height - element_height[0] - element_height[1]);
-  cos_q3 -= square(element_length[2]) + square(element_length[3]);
-  cos_q3 /= 2 * element_length[2] * element_length[3];
+  double cos_q3 = square(target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1]);
+  cos_q3 += square(target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1]);
+  cos_q3 -= square(ELEMENT_LENGTH[2]) + square(ELEMENT_LENGTH[3]);
+  cos_q3 /= 2 * ELEMENT_LENGTH[2] * ELEMENT_LENGTH[3];
 
   if (abs(cos_q3) > 1){
     return;
@@ -447,7 +401,7 @@ void get_target_positions(){
   q2 = -1 * acos(cos_q3) * 180 / M_PI;
   
   //если заходит в обратное направление наклона - считать угол в другую сторону
-  if (target_dist <= element_length[0] + element_length[1]){
+  if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
     q2 *= -1;
     }
   
@@ -458,10 +412,10 @@ void get_target_positions(){
   */
 
   double q1 = 0.0;
-  double tg_2 = element_length[3] * sin(q2);
-  double tg_1 = target_height - element_height[0] - element_height[1];
-  tg_1 /= target_dist - element_length[0] - element_length[1];
-  tg_2 /= element_length[3] * cos(q2) + element_length[2];
+  double tg_2 = ELEMENT_LENGTH[3] * sin(q2);
+  double tg_1 = target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1];
+  tg_1 /= target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1];
+  tg_2 /= ELEMENT_LENGTH[3] * cos(q2) + ELEMENT_LENGTH[2];
 
   q1 = atan(tg_1) - atan(tg_2);
   q1 *= -1 * 180 / M_PI;
@@ -471,20 +425,20 @@ void get_target_positions(){
     }
   */
   if (!check_boxes(
-    int(target_fi / 1.8 * reduction[0]),
-    int(q1 / 1.8 * reduction[1]),
-    int(q2 / 1.8 * reduction[2]))){
+    int(target_fi / 1.8 * REDUCTION[0]),
+    int(q1 / 1.8 * REDUCTION[1]),
+    int(q2 / 1.8 * REDUCTION[2]))){
     return;
     }
 
-  target_pos[0] = int(target_fi / 1.8 * reduction[0]);
-  target_pos[1] = int(q1 / 1.8 * reduction[1]);
-  target_pos[2] = int(q2 / 1.8 * reduction[2]);
+  target_pos[0] = int(target_fi / 1.8 * REDUCTION[0]);
+  target_pos[1] = int(q1 / 1.8 * REDUCTION[1]);
+  target_pos[2] = int(q2 / 1.8 * REDUCTION[2]);
 
   }
 
 void read_input(){
-  if (string == default_string){
+  if (string == DEFAULT_STRING){
     return;
     }
 
@@ -504,7 +458,7 @@ void read_input(){
       return;
     }
 
-  string = default_string;
+  string = DEFAULT_STRING;
   i = 0;
   }
 
@@ -537,11 +491,11 @@ void encoder_setup(AS5600 enc){
   delay(100);
   }
 
-float angle(AS5600 enc, float angle_dislocation){
+float angle(AS5600 enc, float ANGLE_DISLOCATION){
   if (!enc.isConnected()){
     return 400;
     }
-  return (float(enc.rawAngle()) / 4096 * 360) - angle_dislocation;
+  return (float(enc.rawAngle()) / 4096 * 360) - ANGLE_DISLOCATION;
   }
 
 int current_position(float current_angle, float reduct){
@@ -582,7 +536,7 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
   int step = 1;
   int pos = current_position(current_angle, reduct);
   
-  if (abs(pos - target_position) <= delta){
+  if (abs(pos - target_position) <= DELTA){
     Stepper.setCurrentPosition(target_position);
     return;
     }
@@ -590,10 +544,10 @@ void fix_position(int target_position, float current_angle, AccelStepper Stepper
     step *= (-1);
     }
   
-  if (pos - target_position > delta){
+  if (pos - target_position > DELTA){
     Stepper.move(-step);
     }
-  if (pos - target_position < -delta){
+  if (pos - target_position < -DELTA){
     Stepper.move(step);
     }
 
@@ -605,9 +559,9 @@ void servo_setup(int index){
     return;
     }
 
-  TCA9548A(enc_adress[index]);
+  TCA9548A(ENC_ADRESS[index]);
   encoder_setup(element_encoders[index]);
-  stepper_setup(element_steppers[index], angle(element_encoders[index], angle_dislocation[index]), reduction[index]);
+  stepper_setup(element_steppers[index], angle(element_encoders[index], ANGLE_DISLOCATION[index]), REDUCTION[index]);
   }
 
 float servo_angle(int index){
@@ -615,8 +569,8 @@ float servo_angle(int index){
     return;
     }
 
-  TCA9548A(enc_adress[index]);
-  return angle(element_encoders[index], angle_dislocation[index]);
+  TCA9548A(ENC_ADRESS[index]);
+  return angle(element_encoders[index], ANGLE_DISLOCATION[index]);
   }
 
 void fix_servo_position(int index){
@@ -624,7 +578,7 @@ void fix_servo_position(int index){
     return;
     }
 
-  fix_position(target_pos[index], enc_angle[index], element_steppers[index], clockwise_direction[index], reduction[index]);
+  fix_position(target_pos[index], enc_angle[index], element_steppers[index], CLOCKWISE_DIRECTION[index], REDUCTION[index]);
   }
 
 void print_servo_position(int index){
@@ -632,7 +586,7 @@ void print_servo_position(int index){
     return;
     }
 
-  stepper_print(element_steppers[index], enc_angle[index], reduction[index]);
+  stepper_print(element_steppers[index], enc_angle[index], REDUCTION[index]);
   }
 
 void print_all_info(){
@@ -679,7 +633,7 @@ void loop() {
   //print_target_coords();
   //print_target_positions();
 
-  //speed_regulation(target_pos[0], enc_angle[0], reduction[0]);
+  //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(30);
   }
 //
