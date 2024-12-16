@@ -27,7 +27,7 @@ write_pos = 'w'};
 const byte DELTA = 1;
 const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
 const byte MOVE_MM_PER_COMMAND = 5;
-const float MOVE_DERGEES_PER_COMMAND = 3.6;
+const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMAND;
 
 char input = '0';
 
