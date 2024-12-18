@@ -611,6 +611,7 @@ void fix_servo_position(int index){
     return;
     }
   if (!are_enconers_connected){
+    Serial.println("ENCODERS WERE NOT CONNECTED!");
     return;
     }
   fix_position(target_pos[index], enc_angle[index], element_steppers[index], SPIN_DIRECTION[index], REDUCTION[index]);
