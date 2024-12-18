@@ -113,6 +113,10 @@ void set_default_pos(){
   target_pos[0] = DEFAULT_POSITIONS[0];
   target_pos[1] = DEFAULT_POSITIONS[1];
   target_pos[2] = DEFAULT_POSITIONS[2];
+  
+  target_fi = 180;
+  target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3];
+  target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
   }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
