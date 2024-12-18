@@ -35,6 +35,7 @@ int target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_
 int target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
 
 byte i = 0;
+bool is_grabbed = 1;
 bool are_enconers_connected = true; //do not move is any encoder is disconnected
 
 float enc_angle[] = {0.0, 0.0, 0.0};
@@ -83,8 +84,6 @@ void arm_off(Servo my_servo){
   }
 
 void arm_grab_release(Servo my_servo){
-  bool is_grabbed = 1;
-
   if (is_grabbed){
     Serial.println("releasing");
     arm_unlock(my_servo);
@@ -662,11 +661,11 @@ void loop() {
   fix_servo_position(1);
   fix_servo_position(2);
   
-  //print_servo_position(0);
-  //print_servo_position(1);
-  //print_servo_position(2);
-  //print_target_coords();
-  //print_target_positions();
+  print_servo_position(0);
+  print_servo_position(1);
+  print_servo_position(2);
+  print_target_coords();
+  print_target_positions();
 
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
