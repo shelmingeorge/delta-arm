@@ -50,7 +50,6 @@ AccelStepper element_steppers[] = {Stepper0, Stepper1, Stepper2};
 AS5600 element_encoders[3]; //= {encoder0, encoder1, encoder2};
 Servo Arm;
 
-
 void TCA9548A(uint8_t bus){
   Wire.beginTransmission(0x70);  // TCA9548A address is 0x70
   Wire.write(1 << bus);          // send byte to select bus
@@ -659,13 +658,13 @@ void loop() {
   fix_servo_position(0);
   fix_servo_position(1);
   fix_servo_position(2);
-  
+  /*
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
   print_target_coords();
   print_target_positions();
-
+  */
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
