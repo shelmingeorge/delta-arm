@@ -20,9 +20,8 @@ const char DEFAULT_STRING[] = "---------";
 String string = DEFAULT_STRING;
 
 enum Control_chars : char {endl = 'e', angles = 'a',
-pause = 'p', play = 'c', grab = 'g', default_pos = ' ', 
-up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b', 
-write_pos = 'w'};
+pause = 'p', play = 'c', grab = 'g', default_pos = ' ', write_pos = 'w',
+up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b'};
 
 const byte DELTA = 1;
 const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
@@ -651,7 +650,7 @@ void setup() {
 
 
 void loop() {
-  
+
   enc_angle[0] = servo_angle(0);
   enc_angle[1] = servo_angle(1);
   enc_angle[2] = servo_angle(2);
@@ -672,5 +671,3 @@ void loop() {
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
-//
-//hiiii
