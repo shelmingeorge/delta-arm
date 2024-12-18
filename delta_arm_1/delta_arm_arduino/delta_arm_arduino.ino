@@ -36,6 +36,7 @@ int target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_
 int target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
 
 byte i = 0;
+bool are_enconers_connected = true; //do not move is any encoder is disconnected
 
 float enc_angle[] = {0.0, 0.0, 0.0};
 const int DEFAULT_POSITIONS[] = {100, 0, 0};
@@ -517,6 +518,9 @@ void encoder_setup(AS5600 enc){
   enc.begin();
   Serial.print("Connect: ");
   Serial.println(enc.isConnected());
+  if(!enc.isConnected()){
+    are_enconers_connected = false;
+    }
   delay(100);
   }
 
@@ -606,7 +610,9 @@ void fix_servo_position(int index){
   if ((index < 0) or (index > 2)){
     return;
     }
-
+  if (!are_enconers_connected){
+    return;
+    }
   fix_position(target_pos[index], enc_angle[index], element_steppers[index], SPIN_DIRECTION[index], REDUCTION[index]);
   }
 
@@ -663,7 +669,7 @@ void loop() {
   //print_target_positions();
 
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
-  delay(30);
+  delay(40);
   }
 //
 //hiiii
