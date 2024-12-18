@@ -119,7 +119,8 @@ void set_default_pos(){
   }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
-  
+  return true; //test
+
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
@@ -136,15 +137,15 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   float(target_pos_2 * 1.8 / REDUCTION[2])};
 
   int hurtbox_0_coords[] = {
-  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
-  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
-  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
-  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
+    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
+    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
+    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
+    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
   int hurtbox_1_coords[] = {
-  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]), 
-  ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_1_w * cos(target_angles[1])),
-  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - 10,
-  ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_1_h * sin(target_angles[1]))};
+    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]), 
+    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_1_w * cos(target_angles[1])),
+    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - 10,
+    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_1_h * sin(target_angles[1]))};
 
   if (hurtbox_1_coords[1] < hurtbox_1_coords[0]){
     int swap = hurtbox_1_coords[1];
@@ -417,27 +418,21 @@ void get_coords(){
 
 void get_target_positions(){
   double q2 = 0.0;
-  double cos_q3 = square(target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1]);
-  cos_q3 += square(target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1]);
-  cos_q3 -= square(ELEMENT_LENGTH[2]) + square(ELEMENT_LENGTH[3]);
-  cos_q3 /= 2 * ELEMENT_LENGTH[2] * ELEMENT_LENGTH[3];
+  double cos_q2 = square(target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1]);
+  cos_q2 += square(target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1]);
+  cos_q2 -= square(ELEMENT_LENGTH[2]) + square(ELEMENT_LENGTH[3]);
+  cos_q2 /= 2 * ELEMENT_LENGTH[2] * ELEMENT_LENGTH[3];
 
-  if (abs(cos_q3) > 1){
+  if (abs(cos_q2) > 1){
     return;
     }
 
-  q2 = -1 * acos(cos_q3) * 180 / M_PI;
+  q2 = -1 * acos(cos_q2) * 180 / M_PI;
   
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
     q2 *= -1;
     }
-  
-  /*
-    if ((q2 >= 120) or (q2 <= -120)){
-      return;
-    }
-  */
 
   double q1 = 0.0;
   double tg_2 = ELEMENT_LENGTH[3] * sin(q2);
@@ -447,11 +442,7 @@ void get_target_positions(){
 
   q1 = atan(tg_1) - atan(tg_2);
   q1 *= -1 * 180 / M_PI;
-  /*
-    if ((q1 >= 20) or (q1 <= -120)){
-      return;
-    }
-  */
+
   if (!check_boxes(
     int(target_fi / 1.8 * REDUCTION[0]),
     int(q1 / 1.8 * REDUCTION[1]),
@@ -660,13 +651,13 @@ void loop() {
   fix_servo_position(0);
   fix_servo_position(1);
   fix_servo_position(2);
-  /*
+  
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
   print_target_coords();
   print_target_positions();
-  */
+
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
