@@ -31,9 +31,9 @@ const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMA
 
 char input = '0';
 
-int target_fi = 0;
-int target_dist = 0;
-int target_height = 0;
+int target_fi = 180;
+int target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3];
+int target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
 
 byte i = 0;
 
