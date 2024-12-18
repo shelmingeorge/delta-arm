@@ -426,9 +426,7 @@ void get_target_positions(){
   if (abs(cos_q2) > 1){
     return;
     }
-
-  q2 = -1 * acos(cos_q2) * 180 / M_PI;
-  
+  q2 *= -1;
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
     q2 *= -1;
@@ -441,7 +439,17 @@ void get_target_positions(){
   tg_2 /= ELEMENT_LENGTH[3] * cos(q2) + ELEMENT_LENGTH[2];
 
   q1 = atan(tg_1) - atan(tg_2);
-  q1 *= -1 * 180 / M_PI;
+  q1 *= 180 / M_PI; 
+
+  //если заходит в обратное направление наклона - считать угол в другую сторону
+  if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
+    q1 = 180 + q1;
+    }
+
+  if (SPIN_DIRECTION[1]){
+    q1 *= -1; //направление отсчета двигателя
+  }
+  q2 *= 180 / M_PI;
 
   if (!check_boxes(
     int(target_fi / 1.8 * REDUCTION[0]),
