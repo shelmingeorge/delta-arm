@@ -24,8 +24,8 @@ pause = 'p', play = 'c', grab = 'g', default_pos = ' ', write_pos = 'w',
 up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b'};
 
 const byte DELTA = 1;
-const byte MOVE_STEPS_PER_COMMAND = 5; //сделать переменной и изменять с помощью ф-ии?
-const byte MOVE_MM_PER_COMMAND = 15;
+const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
+const byte MOVE_MM_PER_COMMAND = 5;
 const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMAND;
 
 char input = '0';
@@ -118,7 +118,7 @@ void set_default_pos(){
   }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
-  
+  return true; //test
 
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
