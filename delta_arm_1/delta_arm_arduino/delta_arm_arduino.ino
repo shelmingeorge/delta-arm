@@ -426,7 +426,7 @@ void get_target_positions(){
     q1 = 180.0 + q1;
     }
 
-  if (!SPIN_DIRECTION[1]){
+  if (SPIN_DIRECTION[1]){
     q1 *= -1; //направление отсчета двигателя
   }
   q2 *= 180.0 / M_PI;
