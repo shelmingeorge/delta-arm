@@ -24,8 +24,8 @@ pause = 'p', play = 'c', grab = 'g', default_pos = ' ', write_pos = 'w',
 up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b'};
 
 const byte DELTA = 1;
-const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
-const byte MOVE_MM_PER_COMMAND = 5;
+const byte MOVE_STEPS_PER_COMMAND = 5; //сделать переменной и изменять с помощью ф-ии?
+const byte MOVE_MM_PER_COMMAND = 15;
 const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMAND;
 
 char input = '0';
@@ -118,7 +118,7 @@ void set_default_pos(){
   }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
-  return true; //test
+  
 
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
@@ -385,30 +385,6 @@ void get_coords(){
   int dist = string_dist.toInt();
   int height = string_height.toInt();
 
-  /*
-    if ((fi <= 30) or (fi >= 330)){
-      return;
-    }
-    if ((dist <= -70) or 
-    (dist > (ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]))){
-      return;
-    }
-    if ((height < 20) or 
-    (height > (ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]))){
-      return;
-    }
-    //теорема пифагора
-    if ((square(dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1]) + 
-    square(height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1])) > 
-    square(ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3])){
-      return;
-    }
-    
-    //отрезает всю зону 1 и 2 звена
-    if ((dist < 100) and (height < 75)){
-      return;
-    }
-    */
   target_fi = fi;
   target_dist = dist;
   target_height = height;
@@ -417,14 +393,19 @@ void get_coords(){
 
 void get_target_positions(){
   double q2 = 0.0;
-  double cos_q2 = square(target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1]);
-  cos_q2 += square(target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1]);
-  cos_q2 -= square(ELEMENT_LENGTH[2]) + square(ELEMENT_LENGTH[3]);
-  cos_q2 /= 2 * ELEMENT_LENGTH[2] * ELEMENT_LENGTH[3];
+  
+  double acc = target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1];
+  double cos_q2 = sq(acc);
+  acc = target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1];
+  cos_q2 += sq(acc);
+  cos_q2 -= sq(ELEMENT_LENGTH[2]) + sq(ELEMENT_LENGTH[3]);
+  cos_q2 /= (2 * ELEMENT_LENGTH[2] * ELEMENT_LENGTH[3]);
 
   if (abs(cos_q2) > 1){
     return;
     }
+
+  q2 = acos(cos_q2);
   q2 *= -1;
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
@@ -438,25 +419,25 @@ void get_target_positions(){
   tg_2 /= ELEMENT_LENGTH[3] * cos(q2) + ELEMENT_LENGTH[2];
 
   q1 = atan(tg_1) - atan(tg_2);
-  q1 *= 180 / M_PI; 
+  q1 *= 180.0 / M_PI; 
 
   //если заходит в обратное направление наклона - считать угол в другую сторону
   if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
-    q1 = 180 + q1;
+    q1 = 180.0 + q1;
     }
 
-  if (SPIN_DIRECTION[1]){
+  if (!SPIN_DIRECTION[1]){
     q1 *= -1; //направление отсчета двигателя
   }
-  q2 *= 180 / M_PI;
-
+  q2 *= 180.0 / M_PI;
+  
   if (!check_boxes(
     int(target_fi / 1.8 * REDUCTION[0]),
     int(q1 / 1.8 * REDUCTION[1]),
     int(q2 / 1.8 * REDUCTION[2]))){
     return;
     }
-
+  
   target_pos[0] = int(target_fi / 1.8 * REDUCTION[0]);
   target_pos[1] = int(q1 / 1.8 * REDUCTION[1]);
   target_pos[2] = int(q2 / 1.8 * REDUCTION[2]);
@@ -658,13 +639,13 @@ void loop() {
   fix_servo_position(0);
   fix_servo_position(1);
   fix_servo_position(2);
-  /*
+  
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
   print_target_coords();
   print_target_positions();
-  */
+
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
