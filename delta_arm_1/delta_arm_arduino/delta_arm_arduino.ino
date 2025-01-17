@@ -117,7 +117,7 @@ void set_default_pos(){
   target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
   }
 
-bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
+bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
 
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
@@ -126,7 +126,7 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   //
   enum movement_limits : int {dist_min_limit = 0, dist_max_limit = 280, bottom_limit = 0, top_limit = 220};
   enum hurtbox1_sizes : int {h1_lenght = 120, h1_height = 40, h1_bottom_dislocation = -8};
-  const int hitbox_coords[] = {122, 75}; //{dist_max, height_max}
+  const int hitbox_coords[] = {122, 75}; // dist and height from (0,0)
 
   float target_angles[] = {
   (-1) * float(target_pos_1 * 1.8 / REDUCTION[1]), //-1 из-за учета направления вращения
@@ -141,12 +141,16 @@ bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
   if ((hurtbox0_Xc_Yc_R[0] + hurtbox0_Xc_Yc_R[2]) > dist_max_limit) return false;
   if ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < bottom_limit) return false;
   if ((hurtbox0_Xc_Yc_R[1] + hurtbox0_Xc_Yc_R[2]) > top_limit) return false;
- 
-
+  
+  if (((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < hitbox_coords[0]) and 
+    ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < hitbox_coords[1])){
+      return false;
+      }
 
   float hurtbox1_Xc_Yc_a[] = {//X и Y 1 точки + угол наклона
     hurtbox0_Xc_Yc_R[0], hurtbox0_Xc_Yc_R[1], target_angles[1]};
 
+  //тут предварительный расчет крайних точек
   //тут проверка что захват не пересекает хитбокс
 
 
@@ -299,7 +303,7 @@ void get_angles(){
   int angle_1 = -1 * string_q1.toInt();
   int angle_2 = string_q2.toInt();
 
-  if (!check_boxes(
+  if (!check_collisions(
     int(double(angle_0) / 1.8 * REDUCTION[0]),
     int(double(angle_1) / 1.8 * REDUCTION[1]),
     int(double(angle_2) / 1.8 * REDUCTION[2]))){
@@ -374,7 +378,7 @@ void get_target_positions(){
   }
   q2 *= 180.0 / M_PI;
   
-  if (!check_boxes(
+  if (!check_collisions(
     int(target_fi / 1.8 * REDUCTION[0]),
     int(q1 / 1.8 * REDUCTION[1]),
     int(q2 / 1.8 * REDUCTION[2]))){
