@@ -125,12 +125,15 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
     }
   //
   enum movement_limits : int {dist_min_limit = 0, dist_max_limit = 280, bottom_limit = 0, top_limit = 220};
-  enum hurtbox1_sizes : int {h1_lenght = 120, h1_height = 40, h1_bottom_dislocation = -8};
+  enum hurtbox1_sizes : int {h1_lenght = 120, h1_height = 40, h1_bottom = -8};
   const int hitbox_coords[] = {122, 75}; // dist and height from (0,0)
 
   float target_angles[] = {
   (-1) * float(target_pos_1 * 1.8 / REDUCTION[1]), //-1 из-за учета направления вращения
   float(target_pos_2 * 1.8 / REDUCTION[2])};
+
+  target_angles[0] *= M_PI / 180.0;
+  target_angles[1] *= M_PI / 180.0;
 
   int hurtbox0_Xc_Yc_R[] = {
     ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ ELEMENT_LENGTH[2] * cos(target_angles[0]),
@@ -141,18 +144,25 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
   if ((hurtbox0_Xc_Yc_R[0] + hurtbox0_Xc_Yc_R[2]) > dist_max_limit) return false;
   if ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < bottom_limit) return false;
   if ((hurtbox0_Xc_Yc_R[1] + hurtbox0_Xc_Yc_R[2]) > top_limit) return false;
-  
+
   if (((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < hitbox_coords[0]) and 
     ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < hitbox_coords[1])){
       return false;
       }
 
-  float hurtbox1_Xc_Yc_a[] = {//X и Y 1 точки + угол наклона
-    hurtbox0_Xc_Yc_R[0], hurtbox0_Xc_Yc_R[1], target_angles[1]};
-
-  //тут предварительный расчет крайних точек
-  //тут проверка что захват не пересекает хитбокс
-
+  // top near point
+    int hurtbox1_coords[][2] = {//  {X, Y}
+      {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom)*cos(target_angles[1] + M_PI / 2)),
+      hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom)*sin(target_angles[1] + M_PI / 2)) },
+      {0, 0}, {0, 0}};
+  //  top distant point
+    hurtbox1_coords[1][0] = hurtbox1_coords[0][0] + int(h1_lenght*cos(target_angles[1]));
+    hurtbox1_coords[1][1] = hurtbox1_coords[0][1] + int(h1_lenght*sin(target_angles[1]));
+  //  bottom distant point
+    hurtbox1_coords[2][0] = hurtbox1_coords[1][0] + int((h1_height + h1_bottom)*cos(target_angles[1] - M_PI / 2));
+    hurtbox1_coords[2][1] = hurtbox1_coords[1][1] + int((h1_height + h1_bottom)*sin(target_angles[1] - M_PI / 2));  
+  
+  //if_ы
 
   return true;
   }
