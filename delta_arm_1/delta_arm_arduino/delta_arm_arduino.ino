@@ -151,7 +151,6 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
       return false;
       }
 
-
   //  top near point
     int hurtbox1_coords[][2] = {//  {X, Y}
       {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * cos(target_angles[1] + M_PI / 2)) + 
@@ -176,7 +175,6 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
       return false;
       }
     }
-
   return true;
   }
 
@@ -362,7 +360,7 @@ void get_coords(){
 
 
 void get_target_positions(){
-  double q2 = 0.0;
+  double q2 = target_pos[2];
   
   double acc = target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1];
   double cos_q2 = sq(acc);
@@ -382,7 +380,7 @@ void get_target_positions(){
     q2 *= -1;
     }
 
-  double q1 = 0.0;
+  double q1 = target_pos[1];
   double tg_2 = ELEMENT_LENGTH[3] * sin(q2);
   double tg_1 = target_height - ELEMENT_HEIGHT[0] - ELEMENT_HEIGHT[1];
   tg_1 /= target_dist - ELEMENT_LENGTH[0] - ELEMENT_LENGTH[1];
