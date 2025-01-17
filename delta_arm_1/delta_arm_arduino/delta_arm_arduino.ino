@@ -125,7 +125,7 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
     }
   //
   enum movement_limits : int {dist_min_limit = 0, dist_max_limit = 280, bottom_limit = 0, top_limit = 220};
-  enum hurtbox1_sizes : int {h1_lenght = 120, h1_height = 40, h1_bottom = -8};
+  enum hurtbox1_sizes : int {h1_lenght = 80, h1_height = 40, h1_bottom = -8, h1_left = 40};
   const int hitbox_coords[] = {122, 75}; // dist and height from (0,0)
 
   float target_angles[] = {
@@ -151,12 +151,13 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
       return false;
       }
 
-  // переписать массив под прямоугольник ограниченный серво и захватом а не всем звеном
-  // то есть первая точка - край серво
+
   //  top near point
     int hurtbox1_coords[][2] = {//  {X, Y}
-      {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * cos(target_angles[1] + M_PI / 2)),
-      hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * sin(target_angles[1] + M_PI / 2)) },
+      {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * cos(target_angles[1] + M_PI / 2)) + 
+        int(h1_left * cos(target_angles[1])),
+      hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * sin(target_angles[1] + M_PI / 2)) + 
+        int(h1_left * sin(target_angles[1])) },
       {0, 0}, {0, 0}};
   //  top distant point
     hurtbox1_coords[1][0] = hurtbox1_coords[0][0] + int(h1_lenght  *cos(target_angles[1]));
