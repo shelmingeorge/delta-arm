@@ -129,15 +129,16 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
   const int hitbox_coords[] = {122, 75}; // dist and height from (0,0)
 
   float target_angles[] = {
-  (-1) * float(target_pos_1 * 1.8 / REDUCTION[1]), //-1 из-за учета направления вращения
-  float(target_pos_2 * 1.8 / REDUCTION[2])};
+    target_pos_1 * 1.8 / REDUCTION[1], 
+    target_pos_2 * 1.8 / REDUCTION[2]};
+  if (SPIN_DIRECTION[1]) target_angles[0] *= (-1);
 
   target_angles[0] *= M_PI / 180.0;
   target_angles[1] *= M_PI / 180.0;
 
   int hurtbox0_Xc_Yc_R[] = {
-    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ ELEMENT_LENGTH[2] * cos(target_angles[0]),
-    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ ELEMENT_HEIGHT[2] * sin(target_angles[0]),
+    ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] * cos(target_angles[0]),
+    ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_HEIGHT[2] * sin(target_angles[0]),
     30};
 
   if ((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < dist_min_limit) return false;
@@ -150,19 +151,30 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
       return false;
       }
 
-  // top near point
+  // переписать массив под прямоугольник ограниченный серво и захватом а не всем звеном
+  // то есть первая точка - край серво
+  //  top near point
     int hurtbox1_coords[][2] = {//  {X, Y}
-      {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom)*cos(target_angles[1] + M_PI / 2)),
-      hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom)*sin(target_angles[1] + M_PI / 2)) },
+      {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * cos(target_angles[1] + M_PI / 2)),
+      hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * sin(target_angles[1] + M_PI / 2)) },
       {0, 0}, {0, 0}};
   //  top distant point
-    hurtbox1_coords[1][0] = hurtbox1_coords[0][0] + int(h1_lenght*cos(target_angles[1]));
-    hurtbox1_coords[1][1] = hurtbox1_coords[0][1] + int(h1_lenght*sin(target_angles[1]));
+    hurtbox1_coords[1][0] = hurtbox1_coords[0][0] + int(h1_lenght  *cos(target_angles[1]));
+    hurtbox1_coords[1][1] = hurtbox1_coords[0][1] + int(h1_lenght * sin(target_angles[1]));
   //  bottom distant point
-    hurtbox1_coords[2][0] = hurtbox1_coords[1][0] + int((h1_height + h1_bottom)*cos(target_angles[1] - M_PI / 2));
-    hurtbox1_coords[2][1] = hurtbox1_coords[1][1] + int((h1_height + h1_bottom)*sin(target_angles[1] - M_PI / 2));  
+    hurtbox1_coords[2][0] = hurtbox1_coords[1][0] + int((h1_height + h1_bottom) * cos(target_angles[1] - M_PI / 2));
+    hurtbox1_coords[2][1] = hurtbox1_coords[1][1] + int((h1_height + h1_bottom) * sin(target_angles[1] - M_PI / 2));  
   
-  //if_ы
+  for (byte i = 0; i < 3; i++){
+    if (hurtbox1_coords[i][0] < dist_min_limit) return false;
+    if (hurtbox1_coords[i][0] > dist_max_limit) return false;
+    if (hurtbox1_coords[i][1] < bottom_limit) return false;
+    if (hurtbox1_coords[i][1] > top_limit) return false;
+
+    if ((hurtbox1_coords[i][0] < hitbox_coords[0]) and (hurtbox1_coords[i][1] < hitbox_coords[1])){
+      return false;
+      }
+    }
 
   return true;
   }
