@@ -20,8 +20,8 @@ const char DEFAULT_STRING[] = "---------";
 String string = DEFAULT_STRING;
 
 enum Control_chars : char {endl = 'e', angles = 'a',
-pause = 'p', play = 'c', grab = 'g', default_pos = ' ', write_pos = 'w',
-up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b'};
+  pause = 'p', play = 'c', grab = 'g', default_pos = ' ', write_pos = 'w',
+  up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b'};
 
 const byte DELTA = 1;
 const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
@@ -118,69 +118,37 @@ void set_default_pos(){
   }
 
 bool check_boxes(int target_pos_0, int target_pos_1, int target_pos_2){
-  return true; //test
 
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
     }
-
-  const int hitbox_coords[] = {-35, 125, 0, 75}; //{dist_min, dist_max, height_min, height_max}
-  const int hurtbox_0_w = 45;
-  const int hurtbox_0_h = 45;
-  const int hurtbox_1_w = 130;
-  const int hurtbox_1_h = 50;
+  //
+  enum movement_limits : int {dist_min_limit = 0, dist_max_limit = 280, bottom_limit = 0, top_limit = 220};
+  enum hurtbox1_sizes : int {h1_lenght = 120, h1_height = 40, h1_bottom_dislocation = -8};
+  const int hitbox_coords[] = {122, 75}; //{dist_max, height_max}
 
   float target_angles[] = {
   (-1) * float(target_pos_1 * 1.8 / REDUCTION[1]), //-1 из-за учета направления вращения
   float(target_pos_2 * 1.8 / REDUCTION[2])};
 
-  int hurtbox_0_coords[] = {
-    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) - int(hurtbox_0_w / 2 * 1.4), 
-    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_0_w / 2 * 1.4),
-    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - int(hurtbox_0_h / 2 * 1.4),
-    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_0_h / 2 * 1.4)};
-  int hurtbox_1_coords[] = {
-    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]), 
-    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2] * cos(target_angles[0]) + int(hurtbox_1_w * cos(target_angles[1])),
-    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) - 10,
-    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2] * sin(target_angles[0]) + int(hurtbox_1_h * sin(target_angles[1]))};
+  int hurtbox0_Xc_Yc_R[] = {
+    ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ ELEMENT_LENGTH[2] * cos(target_angles[0]),
+    ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ ELEMENT_HEIGHT[2] * sin(target_angles[0]),
+    30};
 
-  if (hurtbox_1_coords[1] < hurtbox_1_coords[0]){
-    int swap = hurtbox_1_coords[1];
-    hurtbox_1_coords[1] = hurtbox_1_coords[0];
-    hurtbox_1_coords[0] = swap;
-    }
-  if (hurtbox_1_coords[3] < hurtbox_1_coords[2]){
-    int swap = hurtbox_1_coords[3];
-    hurtbox_1_coords[3] = hurtbox_1_coords[2];
-    hurtbox_1_coords[2] = swap;
-    }
+  if ((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < dist_min_limit) return false;
+  if ((hurtbox0_Xc_Yc_R[0] + hurtbox0_Xc_Yc_R[2]) > dist_max_limit) return false;
+  if ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < bottom_limit) return false;
+  if ((hurtbox0_Xc_Yc_R[1] + hurtbox0_Xc_Yc_R[2]) > top_limit) return false;
+ 
 
-  if (hurtbox_0_coords[2] < 0){
-    return false;
-    }
-  if (hurtbox_1_coords[2] < 0){
-    return false;
-    }
-  if (hurtbox_0_coords[1] > ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3]){
-    return false;
-    }
-  if (hurtbox_1_coords[1] > ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3]){
-    return false;
-    }
-  if ((hurtbox_0_coords[2] < hitbox_coords[3]) and (hurtbox_0_coords[0] < hitbox_coords[1])){
-    return false;
-    }
-  if ((hurtbox_1_coords[2] < hitbox_coords[3]) and (hurtbox_1_coords[0] < hitbox_coords[1])){
-    return false;
-    }
-  if ((hurtbox_0_coords[1] < hitbox_coords[0]) and (hurtbox_0_coords[3] < hitbox_coords[2])){
-    return false;
-    }
-  if ((hurtbox_1_coords[1] < hitbox_coords[0]) and (hurtbox_1_coords[3] < hitbox_coords[2])){
-    return false;
-    }
+
+  float hurtbox1_Xc_Yc_a[] = {//X и Y 1 точки + угол наклона
+    hurtbox0_Xc_Yc_R[0], hurtbox0_Xc_Yc_R[1], target_angles[1]};
+
+  //тут проверка что захват не пересекает хитбокс
+
 
   return true;
   }
@@ -194,19 +162,7 @@ void move_up(){
 
   if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
     target_height = old_height;
-  }
-
-  /*
-    if (!check_boxes(
-      180,
-      target_pos[1] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
-      target_pos[2] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
-        return;
-      }
-
-    target_pos[1] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
-    target_pos[2] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
-  */
+    }
   }
 
 void move_down(){
@@ -218,18 +174,7 @@ void move_down(){
 
   if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
     target_height = old_height;
-  }
-  /*
-    if (!check_boxes(
-      180,
-      target_pos[1] + int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]),
-      target_pos[2] - int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]))){
-        return;
-      }
-    
-    target_pos[1] += int(MOVE_STEPS_PER_COMMAND * REDUCTION[1]);
-    target_pos[2] -= int(MOVE_STEPS_PER_COMMAND * REDUCTION[2]);
-  */
+    }
   }
 
 void move_left(){
@@ -257,8 +202,7 @@ void move_forward(){
 
   if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
     target_dist = old_dist;
-  }
-
+    }
   }
 
 void move_backward(){
@@ -270,8 +214,7 @@ void move_backward(){
 
   if ((target_pos[1] == old_pos[0]) and (target_pos[2] == old_pos[1])){
     target_dist = old_dist;
-  }
-
+    }
   }
 
 void add_char(char input_char){
@@ -453,8 +396,6 @@ void read_input(){
     case endl:
       get_coords();
       get_target_positions();
-      //get_target_pos_0();
-      //get_target_pos_1_2();
       break;
 
     case angles:
@@ -588,8 +529,7 @@ void fix_servo_position(int index){
     return;
     }
   if (!are_enconers_connected){
-    Serial.println("ENCODERS WERE NOT CONNECTED!");
-    return;
+    //return;
     }
   fix_position(target_pos[index], enc_angle[index], element_steppers[index], SPIN_DIRECTION[index], REDUCTION[index]);
   }
@@ -603,6 +543,10 @@ void print_servo_position(int index){
   }
 
 void print_all_info(){
+  if (!are_enconers_connected){
+    Serial.println("ENCODERS WERE NOT CONNECTED!");
+    return;
+    }
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
@@ -639,13 +583,13 @@ void loop() {
   fix_servo_position(0);
   fix_servo_position(1);
   fix_servo_position(2);
-  
+  //  /*
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
   print_target_coords();
   print_target_positions();
-
+  //  */
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
