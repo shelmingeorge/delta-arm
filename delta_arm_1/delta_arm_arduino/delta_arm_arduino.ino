@@ -118,7 +118,6 @@ void set_default_pos(){
   }
 
 bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
-  //return true;
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
@@ -589,7 +588,7 @@ void fix_servo_position(int index){
     return;
     }
   if (!are_enconers_connected){
-    //return;
+    return;
     }
   fix_position(target_pos[index], enc_angle[index], element_steppers[index], SPIN_DIRECTION[index], REDUCTION[index]);
   }
