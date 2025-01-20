@@ -24,7 +24,7 @@ enum Control_chars : char {endl = 'e', angles = 'a',
   up = 'u', down = 'd', left = 'l', right = 'r', forward = 'f', backward = 'b'};
 
 const byte DELTA = 1;
-const byte MOVE_STEPS_PER_COMMAND = 2; //сделать переменной и изменять с помощью ф-ии?
+const byte MOVE_STEPS_PER_COMMAND = 3;
 const byte MOVE_MM_PER_COMMAND = 5;
 const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMAND;
 
@@ -78,18 +78,18 @@ void arm_unlock(Servo my_servo){
   }
 
 void arm_off(Servo my_servo){
-  arm_lock(my_servo);
+  //arm_lock(my_servo);
   my_servo.detach();
   }
 
 void arm_grab_release(Servo my_servo){
   if (is_grabbed){
-    Serial.println("releasing");
+    //Serial.println("releasing");
     arm_unlock(my_servo);
     is_grabbed = 0;
     }
   else {
-    Serial.println("grabbing");
+    //Serial.println("grabbing");
     arm_lock(my_servo);
     is_grabbed = 1;
     }
@@ -118,7 +118,7 @@ void set_default_pos(){
   }
 
 bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
-
+  //return true;
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
@@ -126,7 +126,7 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
   //
   enum movement_limits : int {dist_min_limit = 0, dist_max_limit = 280, bottom_limit = 0, top_limit = 220};
   enum hurtbox1_sizes : int {h1_lenght = 80, h1_height = 40, h1_bottom = -8, h1_left = 40};
-  const int hitbox_coords[] = {122, 75}; // dist and height from (0,0)
+  const int hitbox_coords[] = {120, 73}; // dist and height from (0,0)
 
   float target_angles[] = {
     target_pos_1 * 1.8 / REDUCTION[1], 
@@ -138,16 +138,34 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
 
   int hurtbox0_Xc_Yc_R[] = {
     ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] * cos(target_angles[0]),
-    ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_HEIGHT[2] * sin(target_angles[0]),
-    30};
+    ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_LENGTH[2] * sin(target_angles[0]),
+    20};
 
-  if ((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < dist_min_limit) return false;
-  if ((hurtbox0_Xc_Yc_R[0] + hurtbox0_Xc_Yc_R[2]) > dist_max_limit) return false;
-  if ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < bottom_limit) return false;
-  if ((hurtbox0_Xc_Yc_R[1] + hurtbox0_Xc_Yc_R[2]) > top_limit) return false;
+  if ((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < dist_min_limit) {
+    //Serial.println("h0 min dist limit");
+    //delay(800);
+    return false;
+    }/*
+  if ((hurtbox0_Xc_Yc_R[0] + hurtbox0_Xc_Yc_R[2]) > dist_max_limit) {
+    Serial.println("h0 max dist limit");
+    delay(1000);
+    return false;
+    }*/
+  if ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < bottom_limit) {
+    //Serial.println("h0 bottom limit");
+    //delay(800);
+    return false;
+    }/*
+  if ((hurtbox0_Xc_Yc_R[1] + hurtbox0_Xc_Yc_R[2]) > top_limit) {
+    Serial.println("h0 top limit");
+    delay(1000);
+    return false;
+    }*/
 
   if (((hurtbox0_Xc_Yc_R[0] - hurtbox0_Xc_Yc_R[2]) < hitbox_coords[0]) and 
     ((hurtbox0_Xc_Yc_R[1] - hurtbox0_Xc_Yc_R[2]) < hitbox_coords[1])){
+      //Serial.println("h0 hitbox limit");
+      //delay(800);
       return false;
       }
 
@@ -155,7 +173,7 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
     int hurtbox1_coords[][2] = {//  {X, Y}
       {hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * cos(target_angles[1] + M_PI / 2)) + 
         int(h1_left * cos(target_angles[1])),
-      hurtbox0_Xc_Yc_R[0] + int((h1_height + h1_bottom) * sin(target_angles[1] + M_PI / 2)) + 
+      hurtbox0_Xc_Yc_R[1] + int((h1_height + h1_bottom) * sin(target_angles[1] + M_PI / 2)) + 
         int(h1_left * sin(target_angles[1])) },
       {0, 0}, {0, 0}};
   //  top distant point
@@ -166,12 +184,34 @@ bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
     hurtbox1_coords[2][1] = hurtbox1_coords[1][1] + int((h1_height + h1_bottom) * sin(target_angles[1] - M_PI / 2));  
   
   for (byte i = 0; i < 3; i++){
-    if (hurtbox1_coords[i][0] < dist_min_limit) return false;
-    if (hurtbox1_coords[i][0] > dist_max_limit) return false;
-    if (hurtbox1_coords[i][1] < bottom_limit) return false;
-    if (hurtbox1_coords[i][1] > top_limit) return false;
+    //Serial.print(hurtbox1_coords[i][0]);
+    //Serial.print('\t');
+    //Serial.println(hurtbox1_coords[i][1]);
+    //delay(800);
+    if (hurtbox1_coords[i][0] < dist_min_limit) {
+      //Serial.println("h1 min dist limit");
+      //delay(800);
+      return false;
+      }/*
+    if (hurtbox1_coords[i][0] > dist_max_limit) {
+      Serial.println("h1 max dist limit");
+      delay(1000);
+      return false;
+      }*/
+    if (hurtbox1_coords[i][1] < bottom_limit) {
+      //Serial.println("h1 bottom limit");
+      //delay(800);
+      return false;
+      }/*
+    if (hurtbox1_coords[i][1] > top_limit) {
+      Serial.println("h1 top limit");
+      delay(1000);
+      return false;
+      }*/
 
     if ((hurtbox1_coords[i][0] < hitbox_coords[0]) and (hurtbox1_coords[i][1] < hitbox_coords[1])){
+      //Serial.println("h1 hitbox limit");
+      //delay(800);
       return false;
       }
     }
@@ -374,11 +414,9 @@ void get_target_positions(){
     }
 
   q2 = acos(cos_q2);
-  q2 *= -1;
+
   //если заходит в обратное направление наклона - считать угол в другую сторону
-  if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
-    q2 *= -1;
-    }
+  if (target_dist > (ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1])) q2 *= -1;
 
   double q1 = target_pos[1];
   double tg_2 = ELEMENT_LENGTH[3] * sin(q2);
@@ -390,13 +428,10 @@ void get_target_positions(){
   q1 *= 180.0 / M_PI; 
 
   //если заходит в обратное направление наклона - считать угол в другую сторону
-  if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]){
-    q1 = 180.0 + q1;
-    }
+  if (target_dist <= ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1]) q1 = 180.0 + q1;
 
-  if (SPIN_DIRECTION[1]){
-    q1 *= -1; //направление отсчета двигателя
-  }
+  if (SPIN_DIRECTION[1]) q1 *= -1; //направление отсчета двигателя
+  
   q2 *= 180.0 / M_PI;
   
   if (!check_collisions(
