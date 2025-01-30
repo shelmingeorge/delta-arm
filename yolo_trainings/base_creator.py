@@ -2,20 +2,13 @@ import glob, os
 import cv2
 import random
 
-marker_width=5 #реальная ширина метки в см
+object_names = ["pawn", "cylinder", "cube"]
 
-#реальная высота объектов в см 
-object_data=[
-    {"name":"pawn","number":"00"},
-    {"name":"cylinder","number":"01"},
-    {"name":"cube","number":"02"}
-]
-
-path = "path to prep images folder"
+path = "C:\\worktable_copy\\robo-arm\\diploma\\new\\data\\prep_images"
 path_to_obj = path + "\\objects"
 path_to_back = path + "\\backgrounds"
 
-path_to_base = "path to base folder"
+path_to_base = "C:\\worktable_copy\\robo-arm\\diploma\\new\\data\\base\\"
 path_to_img = path_to_base + "train\\images\\"
 
 val_path_to_base = path_to_base + "val\\"
@@ -76,12 +69,10 @@ if list_files:
         file_number += 1
         i = 0
     
-        #back_number = random.randint(1,1569) # amount of pics in folder
-        #new_img = cv2.imread(path_to_back + "\\nothing" + str(back_number) + ".jpg")
         new_img = cv2.imread(os.path.join(path_to_back, random.choice(os.listdir(path_to_back))))
 
-        for line in object_data:   
-            if filename[:len(object_data[i]["number"])] == object_data[i]["number"]:
+        for line in object_names:   
+            if filename[:len(object_names[i])] == object_names[i]:
                 can = object(i)
 
                 if file_number% 6 == 0 :
