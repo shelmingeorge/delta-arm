@@ -609,7 +609,7 @@ void print_all_info(){
   print_servo_position(0);
   print_servo_position(1);
   print_servo_position(2);
-  //print_target_coords();
+  print_target_coords();
   print_target_positions();
 
   }
@@ -642,13 +642,9 @@ void loop() {
   fix_servo_position(0);
   fix_servo_position(1);
   fix_servo_position(2);
-  //  /*
-  print_servo_position(0);
-  print_servo_position(1);
-  print_servo_position(2);
-  print_target_coords();
-  print_target_positions();
-  //  */
+
+  print_all_info();
+
   //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
