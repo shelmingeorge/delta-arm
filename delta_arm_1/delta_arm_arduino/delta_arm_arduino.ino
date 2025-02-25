@@ -39,7 +39,7 @@ bool is_grabbed = 1;
 bool are_enconers_connected = true; //do not move if any encoder is disconnected
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-const int DEFAULT_POSITIONS[] = {100, 0, 0}; // {22, -60, -239};
+const int DEFAULT_POSITIONS[] = {100, 0, 0}; // {22, -239, -60};
 int target_pos[] = {DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[1], DEFAULT_POSITIONS[2]}; //cylindric coords
 
 AccelStepper Stepper0(1,9,8);
