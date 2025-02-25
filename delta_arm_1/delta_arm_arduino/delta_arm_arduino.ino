@@ -39,7 +39,7 @@ bool is_grabbed = 1;
 bool are_enconers_connected = true; //do not move if any encoder is disconnected
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-const int DEFAULT_POSITIONS[] = {100, 0, 0};
+const int DEFAULT_POSITIONS[] = {100, 0, 0}; // {22, -60, -239};
 int target_pos[] = {DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[1], DEFAULT_POSITIONS[2]}; //cylindric coords
 
 AccelStepper Stepper0(1,9,8);
@@ -112,9 +112,9 @@ void set_default_pos(){
   target_pos[1] = DEFAULT_POSITIONS[1];
   target_pos[2] = DEFAULT_POSITIONS[2];
   
-  target_fi = 180;
-  target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3];
-  target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
+  target_fi = 180; // 40
+  target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3]; // 185
+  target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3]; // 80
   }
 
 bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
