@@ -30,17 +30,17 @@ const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMA
 
 char input = '0';
 
-int target_fi = 180;
-int target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3];
-int target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3];
+int target_fi = 180; // 40
+int target_dist = ELEMENT_LENGTH[0]+ELEMENT_LENGTH[1]+ELEMENT_LENGTH[2]+ELEMENT_LENGTH[3]; // 185
+int target_height = ELEMENT_HEIGHT[0]+ELEMENT_HEIGHT[1]+ELEMENT_HEIGHT[2]+ELEMENT_HEIGHT[3]; // 80
 
 byte i = 0;
 bool is_grabbed = 1;
-bool are_enconers_connected = true; //do not move is any encoder is disconnected
+bool are_enconers_connected = true; //do not move if any encoder is disconnected
 
 float enc_angle[] = {0.0, 0.0, 0.0};
 const int DEFAULT_POSITIONS[] = {100, 0, 0};
-int target_pos[] = {DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[1], DEFAULT_POSITIONS[2]}; //цилиндрические координаты
+int target_pos[] = {DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[1], DEFAULT_POSITIONS[2]}; //cylindric coords
 
 AccelStepper Stepper0(1,9,8);
 AccelStepper Stepper1(1,6,5);
@@ -471,7 +471,6 @@ void read_input(){
 
 void print_target_coords(){
   Serial.print("\n");
-  //Serial.println(string);
 
   Serial.print(target_fi);
   Serial.print("\t");
@@ -482,7 +481,6 @@ void print_target_coords(){
 
 void print_target_positions(){
   Serial.print("\n");
-  //Serial.println(string);
 
   Serial.print(target_pos[0]);
   Serial.print("\t");
@@ -522,12 +520,9 @@ void stepper_print(AccelStepper Stepper, float angle, float reduct){
   Serial.print(angle);
   Serial.print("\t ");
   Serial.print(current_position(angle, reduct));
-  //Serial.print("\t");
-  //Serial.print(Stepper.currentPosition());
   Serial.print("\t");
   }
 
-//продумать для нескольких двигателей
 void speed_regulation(int target_position, float current_angle, float reduct){
   int step_delay = 20;
 
@@ -629,7 +624,6 @@ void setup() {
   delay(2000);
   }
 
-
 void loop() {
 
   enc_angle[0] = servo_angle(0);
@@ -645,6 +639,5 @@ void loop() {
 
   print_all_info();
 
-  //speed_regulation(target_pos[0], enc_angle[0], REDUCTION[0]);
   delay(40);
   }
