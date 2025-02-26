@@ -24,8 +24,10 @@ def get_from_arduino():
     #return data
 
 def search():
+    wait_arduino_answer()
+
     send_to_arduino(commands["right"])
-    time.sleep(0.30)
+    time.sleep(0.05)
 
 def move_to_obj(coords):
     x = coords[0].numpy()
@@ -33,27 +35,39 @@ def move_to_obj(coords):
     w = coords[2].numpy()
     h = coords[3].numpy()
 
+    wait_arduino_answer()
+    # do_shit
+
 def place_object(obj_number):
+    wait_arduino_answer()
+
     if obj_number == 0:
-        #move in position 0
+        #move to position 0
         pass
     if obj_number == 1:
-        #move in position 1
+        #move to position 1
         pass
     if obj_number == 2:
-        #move in position 2
+        #move to position 2
         pass
-    #place oblect
-    #move back a little
     
+    wait_arduino_answer()
+    #place oblect
+    wait_arduino_answer()
+    #move back a little
+    wait_arduino_answer()
     send_to_arduino(commands["default"])
-    time.sleep(1.0)
+    time.sleep(0.05)
+# обязательно проверить
+def wait_arduino_answer():
+    while(get_from_arduino != "ready\n"):
+        time.sleep(0.05)
 
 # main
 #arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = 0.1)
-#defolt positioning - corner left
+# default positioning - corner left
 
-model = YOLO("<your_location>")
+model = YOLO("C:\\worktable_copy\\robo-arm\\diploma\\new\\.venv\\yolo_training_n_testing\\models\\5th.pt")
 cap = cv2.VideoCapture(0)
 
 
@@ -65,7 +79,7 @@ while(1):
     results = model.predict(frame, conf = 0.5, max_det = 1, verbose = False) #1 object per robot's cycle
     for r in results:
         cls = tf.squeeze(r.boxes.cls)
-        if tf.rank(cls) != 0: #search if 0 objects in frame
+        if tf.rank(cls) != 0: # search if 0 objects in frame
             search()
             continue
         
