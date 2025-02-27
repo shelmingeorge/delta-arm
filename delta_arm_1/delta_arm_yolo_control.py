@@ -10,9 +10,13 @@ place_coords = [[0, 0, 0],
                    [0, 0, 0], 
                    [0, 0, 0]] # fi, dist, height
 
+obj_is_tracking = False
+ready_to_grab = False
+
 commands = {"endl" : 'e', "angles" : 'a',
   "pause" : 'p', "play" : 'c', "grab" : 'g', "default_pos" : ' ', "write_pos" : 'w',
-  "up" : 'u', "down" : 'd', "left" : 'l', "right" : 'r', "forward" : 'f', "backward" : 'b'}
+  "up" : 'u', "down" : 'd', "left" : 'l', "right" : 'r', "forward" : 'f', "backward" : 'b',
+  "ard_ready" : "ready"}
 
 def send_to_arduino(command):
     #arduino.write(bytes(command, 'utf-8'))
@@ -24,22 +28,40 @@ def get_from_arduino():
     #return data
 
 def search():
-    wait_arduino_answer()
-
+    if obj_is_tracking:
+        return
+    if get_from_arduino != commands["ard_ready"]:
+        return
+    
     send_to_arduino(commands["right"])
     time.sleep(0.05)
 
-def move_to_obj(coords):
+def move_to_object(coords):
+    if get_from_arduino != commands["ard_ready"]:
+        return
+    if ready_to_grab:
+        return
+    
     x = coords[0].numpy()
     y = coords[1].numpy()
     w = coords[2].numpy()
     h = coords[3].numpy()
 
-    wait_arduino_answer()
-    # do_shit
+    # if obj is close and centered start grabbing
+    if h > 0.8:
+        ready_to_grab = True
+        return
 
-def place_object(obj_number):
+    # do 1 iteration of centering and moving closer
+
+def grab_and_place_object(obj_number):
+    if get_from_arduino != commands["ard_ready"]:
+        return
+    if not ready_to_grab:
+        return
+
     wait_arduino_answer()
+    # grab oblect
 
     if obj_number == 0:
         #move to position 0
@@ -52,40 +74,47 @@ def place_object(obj_number):
         pass
     
     wait_arduino_answer()
-    #place oblect
+    # place oblect
+
     wait_arduino_answer()
-    #move back a little
+    # move back a little
+
     wait_arduino_answer()
     send_to_arduino(commands["default"])
     time.sleep(0.05)
+    obj_is_tracking = False
+
 # обязательно проверить
 def wait_arduino_answer():
-    while(get_from_arduino != "ready\n"):
+    while(get_from_arduino != commands["ard_ready"]):
         time.sleep(0.05)
 
 # main
 #arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = 0.1)
 # default positioning - corner left
 
-model = YOLO("C:\\worktable_copy\\robo-arm\\diploma\\new\\.venv\\yolo_training_n_testing\\models\\5th.pt")
+model = YOLO("<your_location>")
 cap = cv2.VideoCapture(0)
 
 
-while(1):
+while(1): # one move per iteration for correct AI working
     success, frame = cap.read()
     if not success:
         continue
     
     results = model.predict(frame, conf = 0.5, max_det = 1, verbose = False) #1 object per robot's cycle
-    for r in results:
-        cls = tf.squeeze(r.boxes.cls)
-        if tf.rank(cls) != 0: # search if 0 objects in frame
-            search()
-            continue
-        
-        move_to_obj(tf.squeeze(r.boxes.xywhn))
-        place_object(cls)
 
-        annotated_frame = results[0].plot()
-        cv2.imshow("YOLOv10", annotated_frame)
-        cv2.waitKey(1)
+    cls = tf.squeeze(results.boxes.cls)
+    if tf.rank(cls) != 0: # search if 0 objects in frame
+        search()
+        continue
+        
+    obj_is_tracking = True
+    move_to_object(tf.squeeze(results.boxes.xywhn))
+    grab_and_place_object(cls) # full operation here, no AI
+
+
+    # for human
+    annotated_frame = results[0].plot()
+    cv2.imshow("YOLOv10", annotated_frame)
+    cv2.waitKey(1)
