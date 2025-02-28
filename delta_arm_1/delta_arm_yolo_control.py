@@ -48,11 +48,28 @@ def move_to_object(coords):
     h = coords[3].numpy()
 
     # if obj is close and centered start grabbing
-    if h > 0.8:
+    if (h >= 0.8) and (abs(x - 0.5) <= 0.1):
         ready_to_grab = True
         return
 
-    # do 1 iteration of centering and moving closer
+    # centering
+    if (x - 0.5) > 0.1:
+        send_to_arduino(commands["right"])
+        return
+    if (x - 0.5) < 0.1:
+        send_to_arduino(commands["left"])
+        return
+    if (y - 0.5) > 0.1:
+        send_to_arduino(commands["down"])
+        return
+    if (y - 0.5) < 0.1:
+        send_to_arduino(commands["up"])
+        return
+
+    # moving closer
+    if h < 0.8:
+        send_to_arduino(commands["forward"])
+        return
 
 def grab_and_place_object(obj_number):
     if get_from_arduino != commands["ard_ready"]:
@@ -60,6 +77,9 @@ def grab_and_place_object(obj_number):
     if not ready_to_grab:
         return
 
+    # release grabber
+    wait_arduino_answer()
+    # move closer blindly
     wait_arduino_answer()
     # grab oblect
 
@@ -74,8 +94,7 @@ def grab_and_place_object(obj_number):
         pass
     
     wait_arduino_answer()
-    # place oblect
-
+    # release oblect
     wait_arduino_answer()
     # move back a little
 
