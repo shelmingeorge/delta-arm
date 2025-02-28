@@ -77,11 +77,14 @@ def grab_and_place_object(obj_number):
     if not ready_to_grab:
         return
 
-    # release grabber
-    wait_arduino_answer()
+    send_to_arduino(commands["grab"]) # open grabber
+    # тут придется ждать вручную тк ардуино не отслеживает не изменения координат
+    
     # move closer blindly
     wait_arduino_answer()
-    # grab oblect
+    
+    send_to_arduino(commands["grab"]) # close grabber
+    # тут придется ждать вручную тк ардуино не отслеживает не изменения координат
 
     if obj_number == 0:
         #move to position 0
@@ -91,14 +94,18 @@ def grab_and_place_object(obj_number):
         pass
     if obj_number == 2:
         #move to position 2
-        pass
-    
+        pass 
     wait_arduino_answer()
-    # release oblect
-    wait_arduino_answer()
-    # move back a little
 
+    send_to_arduino(commands["grab"]) # open grabber
+    # тут придется ждать вручную тк ардуино не отслеживает не изменения координат
+    
+    # move back a little
     wait_arduino_answer()
+
+    send_to_arduino(commands["grab"]) # close grabber
+    # тут придется ждать вручную тк ардуино не отслеживает не изменения координат
+    
     send_to_arduino(commands["default"])
     time.sleep(0.05)
     obj_is_tracking = False
