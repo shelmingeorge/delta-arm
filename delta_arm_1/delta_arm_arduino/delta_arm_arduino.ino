@@ -617,8 +617,8 @@ void send_check_to_pc(){
     return;
     }
   //
-  if ((abs(current_position(enc_angle[0], REDUCTION[0]) - target_pos[0]) > DELTA) and
-  (abs(current_position(enc_angle[1], REDUCTION[1]) - target_pos[1]) > DELTA) and
+  if ((abs(current_position(enc_angle[0], REDUCTION[0]) - target_pos[0]) > DELTA) or
+  (abs(current_position(enc_angle[1], REDUCTION[1]) - target_pos[1]) > DELTA) or
   (abs(current_position(enc_angle[2], REDUCTION[2]) - target_pos[2]) > DELTA)){
     return;
     }
