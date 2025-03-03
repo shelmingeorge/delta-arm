@@ -31,8 +31,8 @@ const float MOVE_DEGREES_PER_COMMAND = REDUCTION[0] * 1.8 * MOVE_STEPS_PER_COMMA
 char input = '0';
 
 int target_fi = 180; // 40
-int target_dist = ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]; // 185
-int target_height = ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_HEIGHT[2] + ELEMENT_HEIGHT[3]; // 80
+int target_dist = 185;//ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]; // 185
+int target_height = 80;//ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_HEIGHT[2] + ELEMENT_HEIGHT[3]; // 80
 
 byte i = 0;
 bool is_grabbed = 1;
@@ -40,7 +40,7 @@ bool are_enconers_connected = true; //do not move if any encoder is disconnected
 bool ready_for_pc_command = false;
 
 float enc_angle[] = {0.0, 0.0, 0.0};
-const int DEFAULT_POSITIONS[] = {100, 0, 0}; // {22, -239, -60};
+const int DEFAULT_POSITIONS[] = {100, -239, -60};//{100, 0, 0}; // {22, -239, -60};
 int target_pos[] = {DEFAULT_POSITIONS[0], DEFAULT_POSITIONS[1], DEFAULT_POSITIONS[2]}; // cylindric coords
 int prev_pos[] = {0, 0, 0}; // for pc_check
 
@@ -115,8 +115,8 @@ void set_default_pos(){
   target_pos[2] = DEFAULT_POSITIONS[2];
   
   target_fi = 180; // 40
-  target_dist = ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]; // 185
-  target_height = ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_HEIGHT[2] + ELEMENT_HEIGHT[3]; // 80
+  target_dist = 185;//ELEMENT_LENGTH[0] + ELEMENT_LENGTH[1] + ELEMENT_LENGTH[2] + ELEMENT_LENGTH[3]; // 185
+  target_height = 80;//ELEMENT_HEIGHT[0] + ELEMENT_HEIGHT[1] + ELEMENT_HEIGHT[2] + ELEMENT_HEIGHT[3]; // 80
   }
 
 bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
@@ -493,8 +493,8 @@ void print_target_positions(){
 
 void encoder_setup(AS5600 enc){
   enc.begin();
-  Serial.print("Connect: ");
-  Serial.println(enc.isConnected());
+  //Serial.print("Connect: ");
+  //Serial.println(enc.isConnected());
   if(!enc.isConnected()){
     are_enconers_connected = false;
     }
@@ -611,23 +611,15 @@ void print_all_info(){
   }
 
 void send_check_to_pc(){
-  if (abs(prev_pos[0] - current_position(enc_angle[0], REDUCTION[0])) <= DELTA){
-    return;
-    }
-  if (abs(prev_pos[1] - current_position(enc_angle[1], REDUCTION[1])) <= DELTA){
-    return;
-    }
-  if (abs(prev_pos[2] - current_position(enc_angle[2], REDUCTION[2])) <= DELTA){
+  if ((abs(prev_pos[0] - current_position(enc_angle[0], REDUCTION[0])) <= DELTA) and 
+  (abs(prev_pos[1] - current_position(enc_angle[1], REDUCTION[1])) <= DELTA) and
+  (abs(prev_pos[2] - current_position(enc_angle[2], REDUCTION[2])) <= DELTA)){
     return;
     }
   //
-  if (abs(current_position(enc_angle[0], REDUCTION[0]) - target_pos[0]) > DELTA){
-    return;
-    }
-  if (abs(current_position(enc_angle[1], REDUCTION[1]) - target_pos[1]) > DELTA){
-    return;
-    }
-  if (abs(current_position(enc_angle[2], REDUCTION[2]) - target_pos[2]) > DELTA){
+  if ((abs(current_position(enc_angle[0], REDUCTION[0]) - target_pos[0]) > DELTA) and
+  (abs(current_position(enc_angle[1], REDUCTION[1]) - target_pos[1]) > DELTA) and
+  (abs(current_position(enc_angle[2], REDUCTION[2]) - target_pos[2]) > DELTA)){
     return;
     }
   //
