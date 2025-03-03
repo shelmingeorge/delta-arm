@@ -120,13 +120,14 @@ void set_default_pos(){
   }
 
 bool check_collisions(int target_pos_0, int target_pos_1, int target_pos_2){
+  return true;
   double angle_0 = float(target_pos_0) * 1.8 / REDUCTION[1];
   if ((angle_0 < 30) and (angle_0 > 330)){
     return false;
     }
   //
   enum movement_limits : int {dist_min_limit = 0, dist_max_limit = 280, bottom_limit = 0, top_limit = 220};
-  enum hurtbox1_sizes : int {h1_lenght = 80, h1_height = 40, h1_bottom = -8, h1_left = 40};
+  enum hurtbox1_sizes : int {h1_lenght = 80, h1_height = 40, h1_bottom = -5, h1_left = 40};
   const int hitbox_coords[] = {120, 73}; // dist and height from (0,0)
 
   float target_angles[] = {
