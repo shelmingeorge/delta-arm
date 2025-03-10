@@ -13,6 +13,9 @@ place_coords = [[0, 0, 0],
 obj_is_tracking = False
 ready_to_grab = False
 
+error_margin = 0.1
+max_height = 0.8
+
 commands = {"endl" : 'e', "angles" : 'a',
   "pause" : 'p', "play" : 'c', "grab" : 'g', "default_pos" : ' ', "write_pos" : 'w',
   "up" : 'u', "down" : 'd', "left" : 'l', "right" : 'r', "forward" : 'f', "backward" : 'b',
@@ -48,26 +51,26 @@ def move_to_object(coords):
     h = coords[3].numpy()
 
     # if obj is close and centered start grabbing
-    if (h >= 0.8) and (abs(x - 0.5) <= 0.1):
+    if (h >= max_height) and (abs(x - 0.5) <= error_margin):
         ready_to_grab = True
         return
 
     # centering
-    if (x - 0.5) > 0.1:
+    if (x - 0.5) > error_margin:
         send_to_arduino(commands["right"])
         return
-    if (x - 0.5) < 0.1:
+    if (x - 0.5) < -error_margin:
         send_to_arduino(commands["left"])
         return
-    if (y - 0.5) > 0.1:
+    if (y - 0.5) > error_margin:
         send_to_arduino(commands["down"])
         return
-    if (y - 0.5) < 0.1:
+    if (y - 0.5) < -error_margin:
         send_to_arduino(commands["up"])
         return
 
     # moving closer
-    if h < 0.8:
+    if h < max_height:
         send_to_arduino(commands["forward"])
         return
 
@@ -120,7 +123,7 @@ def wait_arduino_answer():
 # default positioning - corner left
 
 model = YOLO("<your_location>")
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 
 while(1): # one move per iteration for correct AI working
