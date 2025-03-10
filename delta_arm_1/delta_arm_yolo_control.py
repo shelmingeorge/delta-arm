@@ -12,6 +12,8 @@ place_coords = [[0, 0, 0],
 
 obj_is_tracking = False
 ready_to_grab = False
+search_movements = 0
+max_search_mov = 20 # потом проверить
 
 error_margin = 0.1
 max_height = 0.8
@@ -31,12 +33,19 @@ def get_from_arduino():
     #return data
 
 def search():
+
+    if search_movements > max_search_mov:
+        send_to_arduino(commands["default_pos"])
+        search_movements = 0
+        time.sleep(1)
+        return
     if obj_is_tracking:
         return
     if get_from_arduino != commands["ard_ready"]:
         return
     
     send_to_arduino(commands["right"])
+    search_movements += 1
     time.sleep(0.05)
 
 def move_to_object(coords):
@@ -122,7 +131,7 @@ def wait_arduino_answer():
 #arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = 0.1)
 # default positioning - corner left
 
-model = YOLO("<your_location>")
+model = YOLO("<ur_loc>")
 cap = cv2.VideoCapture(1)
 
 
