@@ -13,7 +13,7 @@ place_coords = [[0, 0, 0],
 obj_is_tracking = False
 ready_to_grab = False
 search_movements = 0
-max_search_mov = 20 # потом проверить
+max_search_mov = 25 # проверить
 
 error_margin = 0.1
 max_height = 0.8
@@ -30,10 +30,10 @@ def send_to_arduino(command):
 def get_from_arduino():
     time.sleep(0.05)
     #data = arduino.readline()
-    #return data
+    #data = data.decode('utf-8')
+    #return data[:-2]
 
 def search():
-
     if search_movements > max_search_mov:
         send_to_arduino(commands["default_pos"])
         search_movements = 0
@@ -98,15 +98,7 @@ def grab_and_place_object(obj_number):
     send_to_arduino(commands["grab"]) # close grabber
     time.sleep(1.0)
 
-    if obj_number == 0:
-        #move to position 0
-        pass
-    if obj_number == 1:
-        #move to position 1
-        pass
-    if obj_number == 2:
-        #move to position 2
-        pass 
+    go_to_coords(obj_number)
     wait_arduino_answer()
 
     send_to_arduino(commands["grab"]) # open grabber
@@ -122,16 +114,20 @@ def grab_and_place_object(obj_number):
     time.sleep(0.05)
     obj_is_tracking = False
 
-# обязательно проверить
 def wait_arduino_answer():
     while(get_from_arduino != commands["ard_ready"]):
         time.sleep(0.05)
+
+def go_to_coords(obj_number):
+    #send_to arduino()
+    # тут обращение к place_coords[obj_number]
+    pass
 
 # main
 #arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = 0.1)
 # default positioning - corner left
 
-model = YOLO("<ur_loc>")
+model = YOLO("<>ur_loc")
 cap = cv2.VideoCapture(1)
 
 
