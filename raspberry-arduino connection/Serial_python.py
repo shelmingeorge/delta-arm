@@ -1,26 +1,20 @@
 import serial
 import time
 
-speed = 9600
-num = "some_data"
+num = "";
 
-def write_serial(x):
-    arduino.write(bytes(x, 'utf-8'))
-    time.sleep(0.05)
-
-def read_serial():
-    data = arduino.readline()
-    return data
-
-def write_read_serial(x):
-    arduino.write(bytes(x, 'utf-8'))
+def write_read(x):
+    #arduino.write(bytes(x, 'utf-8'))
     time.sleep(0.05)
     data = arduino.readline()
-    return data
+    data = data.decode('utf-8')
+    return data[:-2]
 
-arduino = serial.Serial(port = '/dev/ttyACM0', baudrate = speed, timeout = .1)
+arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = .1)
+
 
 while 1:
-    num = input("Enter: ")
-    value = write_read_serial(num)
-    print(value)
+    #num = input("Enter: ")
+    value = write_read(num)
+    if value == "ready":
+        print("yay")
