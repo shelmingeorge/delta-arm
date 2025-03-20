@@ -6,9 +6,9 @@ import serial
 import time
 
 classes = ["pawn", "cylinder", "cube"]
-place_coords = [[0, 0, 0], 
-                   [0, 0, 0], 
-                   [0, 0, 0]] # fi, dist, height
+place_coords = [[280, 220, 20], 
+                   [260, 220, 20], 
+                   [240, 220, 20]] # fi, dist, height
 
 obj_is_tracking = False
 ready_to_grab = False
@@ -18,20 +18,18 @@ max_search_mov = 25 # проверить
 error_margin = 0.1
 max_height = 0.8
 
-commands = {"endl" : 'e', "angles" : 'a',
-  "pause" : 'p', "play" : 'c', "grab" : 'g', "default_pos" : ' ', "write_pos" : 'w',
-  "up" : 'u', "down" : 'd', "left" : 'l', "right" : 'r', "forward" : 'f', "backward" : 'b',
-  "ard_ready" : "ready"}
+commands = {"endl" : 'e', "grab" : 'g', "default_pos" : ' ', "ard_ready" : "ready",
+  "up" : 'u', "down" : 'd', "left" : 'l', "right" : 'r', "forward" : 'f', "backward" : 'b'}
 
 def send_to_arduino(command):
-    #arduino.write(bytes(command, 'utf-8'))
+    arduino.write(bytes(command, 'utf-8'))
     time.sleep(0.05)
 
 def get_from_arduino():
     time.sleep(0.05)
-    #data = arduino.readline()
-    #data = data.decode('utf-8')
-    #return data[:-2]
+    data = arduino.readline()
+    data = data.decode('utf-8')
+    return data[:-2]
 
 def search():
     if search_movements > max_search_mov:
@@ -44,7 +42,7 @@ def search():
     if get_from_arduino != commands["ard_ready"]:
         return
     
-    send_to_arduino(commands["right"])
+    send_to_arduino(commands["left"])
     search_movements += 1
     time.sleep(0.05)
 
@@ -92,19 +90,21 @@ def grab_and_place_object(obj_number):
     send_to_arduino(commands["grab"]) # open grabber
     time.sleep(1.0)
     
-    # move closer blindly
+    send_to_arduino(commands["forward"]) # move closer blindly
     wait_arduino_answer()
     
     send_to_arduino(commands["grab"]) # close grabber
     time.sleep(1.0)
 
-    go_to_coords(obj_number)
+    send_to_arduino(str(place_coords[obj_number, 0]) + 
+                    str(place_coords[obj_number, 1]) + 
+                    str(place_coords[obj_number, 2]) + 'e')
     wait_arduino_answer()
 
     send_to_arduino(commands["grab"]) # open grabber
     time.sleep(1.0)
     
-    # move back a little
+    send_to_arduino(commands["backward"]) # move back a little
     wait_arduino_answer()
 
     send_to_arduino(commands["grab"]) # close grabber
@@ -118,16 +118,12 @@ def wait_arduino_answer():
     while(get_from_arduino != commands["ard_ready"]):
         time.sleep(0.05)
 
-def go_to_coords(obj_number):
-    #send_to arduino()
-    # тут обращение к place_coords[obj_number]
-    pass
 
 # main
-#arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = 0.1)
-# default positioning - corner left
+arduino = serial.Serial(port = 'COM3', baudrate = 115200, timeout = 0.1)
+# default positioning - corner right
 
-model = YOLO("<>ur_loc")
+model = YOLO("C:\\worktable_copy\\robo-arm\\diploma\\new\\.venv\\yolo_training_n_testing\\models\\5th.pt")
 cap = cv2.VideoCapture(1)
 
 
